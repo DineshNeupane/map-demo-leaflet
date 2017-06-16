@@ -9,14 +9,15 @@
 const L = require('leaflet');
 
 let mapRef = {};
+let graphLayer;
 
-function addPoint(location, height) {
+function addPoint(layer, location, height) {
   const startPoint = location;
   const endPoint = [location[0] + height, location[1]];
   L.polygon([
     startPoint,
     endPoint,
-  ]).addTo(mapRef);
+  ]).addTo(layer);
 }
 
 module.exports = {
@@ -36,15 +37,18 @@ module.exports = {
 
     // start the map in South-East England
     mapRef.addLayer(osm);
+    graphLayer = new L.LayerGroup().addTo(mapRef);
     this.dataPoints.map((point) => {
-      addPoint(point.location, point.scale);
+      addPoint(graphLayer, point.location, point.scale);
       return 0;
     });
   },
   watch: {
     points: function pointUpdate(newpoints) {
+      graphLayer.remove();
+      graphLayer = new L.LayerGroup().addTo(mapRef);
       newpoints.map((point) => {
-        addPoint(point.location, point.scale);
+        addPoint(graphLayer, point.location, point.scale);
         return 0;
       });
     },
