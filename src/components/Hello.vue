@@ -1,41 +1,49 @@
 <template>
   <div class="hello">
-    <h1>{{ msg }}</h1>
     <MapView
         :points="points"
     >
     </MapView>
+    <h1 v-for:
     <button v-on:click="addPoint">add point</button>
-    <h2>Essential Links</h2>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank">Forum</a></li>
-      <li><a href="https://gitter.im/vuejs/vue" target="_blank">Gitter Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank">Twitter</a></li>
-      <br>
-      <li><a href="http://vuejs-templates.github.io/webpack/" target="_blank">Docs for This Template</a></li>
-    </ul>
-    <h2>Ecosystem</h2>
-    <ul>
-      <li><a href="http://router.vuejs.org/" target="_blank">vue-router</a></li>
-      <li><a href="http://vuex.vuejs.org/" target="_blank">vuex</a></li>
-      <li><a href="http://vue-loader.vuejs.org/" target="_blank">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank">awesome-vue</a></li>
-    </ul>
   </div>
 </template>
 
 <script>
 import MapView from './Map';
 
-const points = [{
-  location: [51.5, -2.5],
-  scale: 0.2,
-},
-{
-  location: [51.3, -2.3],
-  scale: 0.1,
-}];
+
+const stationsCollection = require('../model/stations').stationsCollection;
+const readingsCollection = require('../model/stations').readingsCollection;
+
+const points = [];
+
+Promise.all([stationsCollection(), readingsCollection()])
+  .then((results) => {
+    const stations = results[0];
+    const readings = results[1];
+    return readings.map((reading) => {
+      for (let i = 0; i < stations.length; i += 1) {
+        const station = stations[i];
+        if (reading.get('measure.stationReference') ===
+                 station.get('stationReference')) {
+          return { station, reading };
+        }
+      }
+      return {};
+    });
+  })
+  .then((stationItems) => {
+    stationItems.map((item) => {
+      const obj = {
+        reference: item.station.reference(),
+        location: [item.station.lat(), item.station.long()],
+        scale: item.reading.get('value'),
+      };
+      points.push(obj);
+      return obj;
+    });
+  });
 
 export default {
   name: 'hello',
@@ -50,7 +58,12 @@ export default {
   },
   methods: {
     addPoint: function addPoint() {
-      points.push({ location: [51.5, -2.1], scale: 0.3 });
+      for (let i = 0; i < 10; i += 1) {
+        points.push({
+          location: [51.0 + Math.random(), -2.5 + Math.random()],
+          scale: Math.random() * 0.5,
+        });
+      }
     },
   },
 };

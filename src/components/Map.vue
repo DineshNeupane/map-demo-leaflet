@@ -1,12 +1,11 @@
 <template>
-  <div>
-    <div id="mapid"></div>
-  </div>
+  <div id="mapid"></div>
 </template>
 
 <script>
 
 const L = require('leaflet');
+const vueSlider = require('./VueSlider');
 
 let mapRef = {};
 let graphLayer;
@@ -22,6 +21,14 @@ function addPoint(layer, location, height) {
 
 module.exports = {
   name: 'MapView',
+  components: {
+    vueSlider,
+  },
+  data() {
+    return {
+      value: 1,
+    };
+  },
   props: ['points'],
   computed: {
     dataPoints: function points() {
@@ -54,10 +61,16 @@ module.exports = {
     },
   },
 };
+
 </script>
 
 <style scoped>
-div {
-  height: 580px;
+#mapid {
+  height: 90vh;
 }
+
+#divider {
+  height: 30px;
+}
+
 </style>
