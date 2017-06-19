@@ -5,11 +5,12 @@
     >
     </MapView>
     <h1 v-for:
-    <button v-on:click="addPoint">add point</button>
+    <button v-on:click="getRainData">add point</button>
   </div>
 </template>
 
 <script>
+import _ from 'lodash';
 import MapView from './Map';
 
 
@@ -18,32 +19,27 @@ const readingsCollection = require('../model/stations').readingsCollection;
 
 const points = [];
 
-Promise.all([stationsCollection(), readingsCollection()])
-  .then((results) => {
-    const stations = results[0];
-    const readings = results[1];
-    return readings.map((reading) => {
-      for (let i = 0; i < stations.length; i += 1) {
-        const station = stations[i];
-        if (reading.get('measure.stationReference') ===
-                 station.get('stationReference')) {
-          return { station, reading };
+function getRainData() {
+  Promise.all([stationsCollection(), readingsCollection()])
+    .then((results) => {
+      const stations = results[0];
+      const readings = results[1];
+      return readings.map((reading) => {
+        const station = _.find(stations, o =>
+          o.get('stationReference') === reading.get('measure.stationReference'));
+        if (station) {
+          const obj = {
+            reference: station.reference(),
+            location: [station.lat(), station.long()],
+            scale: reading.get('value'),
+          };
+          points.push(obj);
+          return obj;
         }
-      }
-      return {};
+        return {};
+      });
     });
-  })
-  .then((stationItems) => {
-    stationItems.map((item) => {
-      const obj = {
-        reference: item.station.reference(),
-        location: [item.station.lat(), item.station.long()],
-        scale: item.reading.get('value'),
-      };
-      points.push(obj);
-      return obj;
-    });
-  });
+}
 
 export default {
   name: 'hello',
@@ -57,14 +53,7 @@ export default {
     MapView,
   },
   methods: {
-    addPoint: function addPoint() {
-      for (let i = 0; i < 10; i += 1) {
-        points.push({
-          location: [51.0 + Math.random(), -2.5 + Math.random()],
-          scale: Math.random() * 0.5,
-        });
-      }
-    },
+    getRainData,
   },
 };
 </script>
