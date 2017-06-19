@@ -4,8 +4,8 @@
         :points="points"
     >
     </MapView>
-    <h1 v-for:
-    <button v-on:click="getRainData">add point</button>
+    <input type="date" v-model="date">
+    <button v-on:click="checkdate">add point</button>
   </div>
 </template>
 
@@ -13,14 +13,16 @@
 import _ from 'lodash';
 import MapView from './Map';
 
+const moment = require('moment');
+
 
 const stationsCollection = require('../model/stations').stationsCollection;
 const readingsCollection = require('../model/stations').readingsCollection;
 
 const points = [];
 
-function getRainData() {
-  Promise.all([stationsCollection(), readingsCollection()])
+function getRainData(date) {
+  Promise.all([stationsCollection(), readingsCollection(date)])
     .then((results) => {
       const stations = results[0];
       const readings = results[1];
@@ -40,11 +42,13 @@ function getRainData() {
       });
     });
 }
+getRainData(moment().format('YYYY-MM-DD'));
 
 export default {
   name: 'hello',
   data() {
     return {
+      date: '2017-06-18',
       msg: 'Welcome to Your Vue.js App',
       points,
     };
@@ -54,6 +58,9 @@ export default {
   },
   methods: {
     getRainData,
+    checkdate: function checkdate() {
+      getRainData(this.date);
+    },
   },
 };
 </script>
