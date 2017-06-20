@@ -69,6 +69,7 @@ module.exports = {
       this.dataPoints = [];
     },
     pointsUpdate(newpoints) {
+      console.log(newpoints);
       this.dataPoints = newpoints;
       graphLayer.remove();
       graphLayer = new L.LayerGroup().addTo(mapRef);

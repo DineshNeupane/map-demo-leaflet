@@ -12,40 +12,19 @@
 </template>
 
 <script>
-import _ from 'lodash';
 import MapView from './Map';
 
 const moment = require('moment');
 
 
-const stationsCollection = require('../model/stations').stationsCollection;
-const readingsCollection = require('../model/stations').readingsCollection;
+const getPoints = require('../model/stations').getPoints;
+
 
 let points = [];
 
-function getRainData(date) {
-  return Promise.all([stationsCollection(), readingsCollection(date)])
-    .then((results) => {
-      console.log(results);
-      const stations = results[0];
-      const readings = results[1];
-      return readings.map((reading) => {
-        const station = _.find(stations, o =>
-          o.get('stationReference') === reading.get('measure.stationReference'));
-        if (station) {
-          const obj = {
-            reference: station.reference(),
-            location: [station.lat(), station.long()],
-            scale: reading.get('value'),
-          };
-          points.push(obj);
-          return obj;
-        }
-        return {};
-      });
-    });
-}
-getRainData(moment().format('YYYY-MM-DD'));
+getPoints(moment().format('YYYY-MM-DD')).then((newPoints) => {
+  points = newPoints;
+});
 
 export default {
   name: 'hello',
@@ -60,10 +39,13 @@ export default {
     MapView,
   },
   methods: {
-    getRainData,
     checkdate: function checkdate() {
       this.$refs.map.pointsClear();
-      getRainData(this.date).then(this.$refs.map.pointsUpdate);
+      getPoints(this.date).then((newpoints) => {
+        points = newpoints;
+        this.$refs.map.pointsUpdate(newpoints);
+        return newpoints;
+      });
     },
     pointsClear: function pointsClear() {
       points = [];
