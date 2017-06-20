@@ -2,10 +2,12 @@
   <div class="hello">
     <MapView
         :points="points"
+       ref="map"
     >
     </MapView>
-    <input type="date" v-model="date">
-    <button v-on:click="checkdate">add point</button>
+    <input type="date" v-model="date" min="2017-06-14" max="2017-06-20">
+    <button v-on:click="checkdate">get points</button>
+    <button v-on:click="pointsClear">clear points</button>
   </div>
 </template>
 
@@ -19,11 +21,12 @@ const moment = require('moment');
 const stationsCollection = require('../model/stations').stationsCollection;
 const readingsCollection = require('../model/stations').readingsCollection;
 
-const points = [];
+let points = [];
 
 function getRainData(date) {
-  Promise.all([stationsCollection(), readingsCollection(date)])
+  return Promise.all([stationsCollection(), readingsCollection(date)])
     .then((results) => {
+      console.log(results);
       const stations = results[0];
       const readings = results[1];
       return readings.map((reading) => {
@@ -48,7 +51,7 @@ export default {
   name: 'hello',
   data() {
     return {
-      date: '2017-06-18',
+      date: moment().format('YYYY-MM-DD'),
       msg: 'Welcome to Your Vue.js App',
       points,
     };
@@ -59,7 +62,12 @@ export default {
   methods: {
     getRainData,
     checkdate: function checkdate() {
-      getRainData(this.date);
+      this.$refs.map.pointsClear();
+      getRainData(this.date).then(this.$refs.map.pointsUpdate);
+    },
+    pointsClear: function pointsClear() {
+      points = [];
+      this.$refs.map.pointsClear();
     },
   },
 };

@@ -51,7 +51,25 @@ module.exports = {
     });
   },
   watch: {
-    points: function pointUpdate(newpoints) {
+    points(newpoints) {
+      this.dataPoints = newpoints;
+      graphLayer.remove();
+      graphLayer = new L.LayerGroup().addTo(mapRef);
+      newpoints.map((point) => {
+        addPoint(graphLayer, point.location, point.scale);
+        return 0;
+      });
+    },
+
+  },
+  methods: {
+    pointsClear() {
+      console.log('called');
+      graphLayer.remove();
+      this.dataPoints = [];
+    },
+    pointsUpdate(newpoints) {
+      this.dataPoints = newpoints;
       graphLayer.remove();
       graphLayer = new L.LayerGroup().addTo(mapRef);
       newpoints.map((point) => {
