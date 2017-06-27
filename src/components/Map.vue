@@ -5,6 +5,8 @@
 <script>
 
 const L = require('leaflet');
+require('../../dist/HeatLayer.js');
+
 const vueSlider = require('./VueSlider');
 const _ = require('lodash');
 
@@ -13,10 +15,10 @@ let rainLayer;
 let floodLayer;
 
 function addPoint(layer, location, height, options) {
-  const params = _.extend({ weight: 4 }, options);
+  const params = _.extend({}, options);
   if (height > 0) {
     const startPoint = location;
-    const endPoint = [location[0] + (height * params.custScale), location[1]];
+    const endPoint = [location[0] + (Math.log(height + 1, 2) * 0.5), location[1]];
     L.polyline([
       startPoint,
       endPoint,
@@ -41,7 +43,7 @@ module.exports = {
     },
   },
   mounted() {
-    mapRef = L.map('mapid').setView(new L.LatLng(51, -2), 8);
+    mapRef = L.map('mapid').setView(new L.LatLng(52, -2), 7);
 
     const osmUrl = '//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
     const osmAttrib = "Map data © <a href='//openstreetmap.org'>OpenStreetMap</a> contributors";
@@ -54,29 +56,28 @@ module.exports = {
   },
   methods: {
     pointsUpdate(newData) {
-      let tempLayer = new L.LayerGroup();
+      const tempRainLayer = new L.LayerGroup();
+      let tempFloodLayer = new L.LayerGroup();
       if (newData.rainData) {
         newData.rainData.data.map((point) => {
           const pointlocation = [point.lat, point.long];
-          addPoint(tempLayer, pointlocation, parseFloat(point.value), newData.rainData.options);
+          addPoint(tempRainLayer, pointlocation, parseFloat(point.value), newData.rainData.options);
           return 0;
         });
       }
-      tempLayer.addTo(mapRef);
-      rainLayer.remove();
-      rainLayer = tempLayer;
-      tempLayer = new L.LayerGroup();
       if (newData.levelData) {
-        newData.levelData.data.map((point) => {
-          const pointlocation = [point.lat, point.long];
-          addPoint(tempLayer, pointlocation,
-            parseFloat(point.percentage), newData.levelData.options);
-          return 0;
+        const heatvals = newData.levelData.data.map((point) => {
+          const pointlocation = [point.lat, point.long, parseFloat(point.percentage)];
+          return pointlocation;
         });
+        tempFloodLayer = L.heatLayer(heatvals, { radius: 20, blur: 25 });
       }
-      tempLayer.addTo(mapRef);
+      tempRainLayer.addTo(mapRef);
+      tempFloodLayer.addTo(mapRef);
+      rainLayer.remove();
       floodLayer.remove();
-      floodLayer = tempLayer;
+      floodLayer = tempRainLayer;
+      rainLayer = tempFloodLayer;
     },
   },
 };

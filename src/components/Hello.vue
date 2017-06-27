@@ -9,11 +9,11 @@
     <div id=controlBox>
       <div class=control v-on:click="play">PLAY</div>
       <div class=control v-on:click="pause">PAUSE</div>
-    </div>
     <input type="date" v-model="date"></input>
     <input type="time" v-model="time" step="900"></input>
     <input type="checkbox" v-model="flooding">Flooding Data</input>
     <input type="checkbox" v-model="rainfall">Rainfall Data</input>
+    </div>
   </div>
 </template>
 
@@ -32,9 +32,9 @@ export default {
   name: 'hello',
   data() {
     return {
-      date: '2017-03-03 14:00:00',
+      date: '2017-05-17 14:00:00',
       time: '00:00:00',
-      flooding: false,
+      flooding: true,
       rainfall: true,
       points,
     };
@@ -42,6 +42,9 @@ export default {
   components: {
     MapView,
     timestamp,
+  },
+  mounted() {
+    this.play();
   },
   watch: {
     date: function date() {
@@ -57,7 +60,7 @@ export default {
         const temp = moment(`${this.date} ${this.time}`, 'YYYY-MM-DD HH:mm').add(15, 'minutes');
         this.date = moment(temp, 'YYYY-MM-DD HH:mm').format('YYYY-MM-DD');
         this.time = moment(temp, 'YYYY-MM-DD HH:mm').format('HH:mm');
-      }, 1000);
+      }, 500);
     },
     pause: function pause() {
       window.clearInterval(this.intervalId);
@@ -77,9 +80,10 @@ export default {
       }
       Promise.join(rainPromise, floodingPromise,
         (rainPoints, levelPoints) => {
+          console.log(levelPoints);
           const data = {
             rainData: { data: rainPoints, options: { custScale: 0.5, weight: 2 } },
-            levelData: { data: levelPoints, options: { custScale: 0.2, weight: 2, color: 'red' } },
+            levelData: { data: levelPoints, options: { custScale: 0.5, weight: 1, color: 'red' } },
           };
           this.$refs.map.pointsUpdate(data);
         });
@@ -112,6 +116,12 @@ a {
   display: inline-block;
   height: 20px;
   font-size: 2em;
+  color: green;
   margin: 0 10px;
+}
+
+#controlBox {
+  background-color: #333333;
+  color: green;
 }
 </style>
