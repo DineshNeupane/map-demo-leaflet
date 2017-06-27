@@ -5,51 +5,84 @@
        ref="map"
     >
     </MapView>
-    <input type="date" v-model="date" min="2017-06-14" max="2017-06-20">
-    <button v-on:click="checkdate">get points</button>
-    <button v-on:click="pointsClear">clear points</button>
+    <timestamp :date="date" :time="time">HELLO</timestamp>
+    <div id=controlBox>
+      <div class=control v-on:click="play">PLAY</div>
+      <div class=control v-on:click="pause">PAUSE</div>
+    </div>
+    <input type="date" v-model="date"></input>
+    <input type="time" v-model="time" step="900"></input>
+    <input type="checkbox" v-model="flooding">Flooding Data</input>
+    <input type="checkbox" v-model="rainfall">Rainfall Data</input>
   </div>
 </template>
 
 <script>
 import MapView from './Map';
+import timestamp from './timestamp';
+import { getPoints, getLevels } from '../services/pointdb';
+// import { stationReadings } from '../services/gauge-api';
 
 const moment = require('moment');
+const Promise = require('bluebird');
 
-
-const getPoints = require('../model/stations').getPoints;
-
-
-let points = [];
-
-getPoints(moment().format('YYYY-MM-DD')).then((newPoints) => {
-  points = newPoints;
-});
+const points = [];
 
 export default {
   name: 'hello',
   data() {
     return {
-      date: moment().format('YYYY-MM-DD'),
-      msg: 'Welcome to Your Vue.js App',
+      date: '2017-03-03 14:00:00',
+      time: '00:00:00',
+      flooding: false,
+      rainfall: true,
       points,
     };
   },
   components: {
     MapView,
+    timestamp,
+  },
+  watch: {
+    date: function date() {
+      this.checkdate(this.date, this.time);
+    },
+    time: function time() {
+      this.checkdate(this.date, this.time);
+    },
   },
   methods: {
-    checkdate: function checkdate() {
-      this.$refs.map.pointsClear();
-      getPoints(this.date).then((newpoints) => {
-        points = newpoints;
-        this.$refs.map.pointsUpdate(newpoints);
-        return newpoints;
-      });
+    play: function play() {
+      this.intervalId = window.setInterval(() => {
+        const temp = moment(`${this.date} ${this.time}`, 'YYYY-MM-DD HH:mm').add(15, 'minutes');
+        this.date = moment(temp, 'YYYY-MM-DD HH:mm').format('YYYY-MM-DD');
+        this.time = moment(temp, 'YYYY-MM-DD HH:mm').format('HH:mm');
+      }, 1000);
     },
-    pointsClear: function pointsClear() {
-      points = [];
-      this.$refs.map.pointsClear();
+    pause: function pause() {
+      window.clearInterval(this.intervalId);
+    },
+    checkdate: function checkdate() {
+      let floodingPromise;
+      let rainPromise;
+      if (this.flooding) {
+        floodingPromise = getLevels(this.date, this.time);
+      } else {
+        floodingPromise = Promise.resolve([]);
+      }
+      if (this.rainfall) {
+        rainPromise = getPoints(this.date, this.time);
+      } else {
+        rainPromise = Promise.resolve([]);
+      }
+      Promise.join(rainPromise, floodingPromise,
+        (rainPoints, levelPoints) => {
+          const data = {
+            rainData: { data: rainPoints, options: { custScale: 0.5, weight: 2 } },
+            levelData: { data: levelPoints, options: { custScale: 0.2, weight: 2, color: 'red' } },
+          };
+          this.$refs.map.pointsUpdate(data);
+        });
     },
   },
 };
@@ -73,5 +106,12 @@ li {
 
 a {
   color: #42b983;
+}
+
+.control {
+  display: inline-block;
+  height: 20px;
+  font-size: 2em;
+  margin: 0 10px;
 }
 </style>

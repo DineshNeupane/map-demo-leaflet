@@ -6,17 +6,22 @@
 
 const L = require('leaflet');
 const vueSlider = require('./VueSlider');
+const _ = require('lodash');
 
 let mapRef = {};
-let graphLayer;
+let rainLayer;
+let floodLayer;
 
-function addPoint(layer, location, height) {
-  const startPoint = location;
-  const endPoint = [location[0] + height, location[1]];
-  L.polygon([
-    startPoint,
-    endPoint,
-  ]).addTo(layer);
+function addPoint(layer, location, height, options) {
+  const params = _.extend({ weight: 4 }, options);
+  if (height > 0) {
+    const startPoint = location;
+    const endPoint = [location[0] + (height * params.custScale), location[1]];
+    L.polyline([
+      startPoint,
+      endPoint,
+    ], params).addTo(layer);
+  }
 }
 
 module.exports = {
@@ -44,39 +49,34 @@ module.exports = {
 
     // start the map in South-East England
     mapRef.addLayer(osm);
-    graphLayer = new L.LayerGroup().addTo(mapRef);
-    this.dataPoints.map((point) => {
-      addPoint(graphLayer, point.location, point.scale);
-      return 0;
-    });
-  },
-  watch: {
-    points(newpoints) {
-      this.dataPoints = newpoints;
-      graphLayer.remove();
-      graphLayer = new L.LayerGroup().addTo(mapRef);
-      newpoints.map((point) => {
-        addPoint(graphLayer, point.location, point.scale);
-        return 0;
-      });
-    },
-
+    rainLayer = new L.LayerGroup().addTo(mapRef);
+    floodLayer = new L.LayerGroup().addTo(mapRef);
   },
   methods: {
-    pointsClear() {
-      console.log('called');
-      graphLayer.remove();
-      this.dataPoints = [];
-    },
-    pointsUpdate(newpoints) {
-      console.log(newpoints);
-      this.dataPoints = newpoints;
-      graphLayer.remove();
-      graphLayer = new L.LayerGroup().addTo(mapRef);
-      newpoints.map((point) => {
-        addPoint(graphLayer, point.location, point.scale);
-        return 0;
-      });
+    pointsUpdate(newData) {
+      let tempLayer = new L.LayerGroup();
+      if (newData.rainData) {
+        newData.rainData.data.map((point) => {
+          const pointlocation = [point.lat, point.long];
+          addPoint(tempLayer, pointlocation, parseFloat(point.value), newData.rainData.options);
+          return 0;
+        });
+      }
+      tempLayer.addTo(mapRef);
+      rainLayer.remove();
+      rainLayer = tempLayer;
+      tempLayer = new L.LayerGroup();
+      if (newData.levelData) {
+        newData.levelData.data.map((point) => {
+          const pointlocation = [point.lat, point.long];
+          addPoint(tempLayer, pointlocation,
+            parseFloat(point.percentage), newData.levelData.options);
+          return 0;
+        });
+      }
+      tempLayer.addTo(mapRef);
+      floodLayer.remove();
+      floodLayer = tempLayer;
     },
   },
 };
@@ -85,7 +85,7 @@ module.exports = {
 
 <style scoped>
 #mapid {
-  height: 90vh;
+  height: 80vh;
 }
 
 #divider {
