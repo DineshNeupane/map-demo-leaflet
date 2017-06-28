@@ -7,41 +7,41 @@
 const L = require('leaflet');
 require('../../dist/HeatLayer.js');
 
-const vueSlider = require('./VueSlider');
 const _ = require('lodash');
 
 let mapRef = {};
 let rainLayer;
 let floodLayer;
 
-function addPoint(layer, location, height, options) {
-  const params = _.extend({}, options);
-  if (height > 0) {
-    const startPoint = location;
-    const endPoint = [location[0] + (Math.log(height + 1, 2) * 0.5), location[1]];
-    L.polyline([
-      startPoint,
-      endPoint,
-    ], params).addTo(layer);
+function mapGraph(data) {
+  const zoom = mapRef.getZoom();
+  const scale = 10 / zoom;
+  const params = _.extend({}, data.options);
+  if (data) {
+    const features = data.data.map((point) => {
+      const locations = [
+        [point.lat, point.long],
+        [point.lat + (point.value * scale), point.long],
+      ];
+      return L.polyline(locations, params);
+    });
+    return L.featureGroup(features);
   }
+  return new L.LayerGroup();
+}
+
+function heatMap(data) {
+  const params = _.extend({}, data.options);
+  if (data) {
+    const pointlocation = data.data.map(point =>
+      ([point.lat, point.long, parseFloat(point.percentage)]));
+    return L.heatLayer(pointlocation, params);
+  }
+  return new L.LayerGroup();
 }
 
 module.exports = {
   name: 'MapView',
-  components: {
-    vueSlider,
-  },
-  data() {
-    return {
-      value: 1,
-    };
-  },
-  props: ['points'],
-  computed: {
-    dataPoints: function points() {
-      return this.points;
-    },
-  },
   mounted() {
     mapRef = L.map('mapid').setView(new L.LatLng(52, -2), 7);
 
@@ -56,28 +56,22 @@ module.exports = {
   },
   methods: {
     pointsUpdate(newData) {
-      const tempRainLayer = new L.LayerGroup();
-      let tempFloodLayer = new L.LayerGroup();
-      if (newData.rainData) {
-        newData.rainData.data.map((point) => {
-          const pointlocation = [point.lat, point.long];
-          addPoint(tempRainLayer, pointlocation, parseFloat(point.value), newData.rainData.options);
-          return 0;
-        });
-      }
-      if (newData.levelData) {
-        const heatvals = newData.levelData.data.map((point) => {
-          const pointlocation = [point.lat, point.long, parseFloat(point.percentage)];
-          return pointlocation;
-        });
-        tempFloodLayer = L.heatLayer(heatvals, { radius: 20, blur: 25 });
-      }
+      const tempRainLayer = mapGraph(newData.rainData);
+      const tempFloodLayer = heatMap(newData.levelData);
       tempRainLayer.addTo(mapRef);
       tempFloodLayer.addTo(mapRef);
       rainLayer.remove();
       floodLayer.remove();
       floodLayer = tempRainLayer;
       rainLayer = tempFloodLayer;
+    },
+    clear(dataTypes) {
+      if (dataTypes.rainData) {
+        rainLayer.remove();
+      }
+      if (dataTypes.levelData) {
+        floodLayer.remove();
+      }
     },
   },
 };

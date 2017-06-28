@@ -1,5 +1,5 @@
 <template>
-  <div class="hello">
+  <div class="hello" v-on:keyup.space="togglePause">
     <MapView
         :points="points"
        ref="map"
@@ -32,10 +32,11 @@ export default {
   name: 'hello',
   data() {
     return {
-      date: '2017-05-17 14:00:00',
+      date: '2017-05-17',
       time: '00:00:00',
       flooding: true,
       rainfall: true,
+      playing: true,
       points,
     };
   },
@@ -48,22 +49,54 @@ export default {
   },
   watch: {
     date: function date() {
-      this.checkdate(this.date, this.time);
+      this.update(this.date, this.time);
     },
     time: function time() {
-      this.checkdate(this.date, this.time);
+      this.update(this.date, this.time);
+    },
+    flooding: function flooding() {
+      this.update(this.date, this.time);
+    },
+    rainfall: function rainfall() {
+      this.update(this.date, this.time);
     },
   },
   methods: {
+    togglePause: function togglePause() {
+      if (!this.intervalId) {
+        this.play();
+      } else {
+        this.pause();
+      }
+    },
+    update: function update(date, time) {
+      if (!this.lock) {
+        this.lock = true;
+        this.checkdate(date, time)
+          .then(() => {
+            this.lock = false;
+          })
+          .catch((error) => {
+            // Rejection, db connection failed
+            console.log(error);
+          });
+      }
+    },
     play: function play() {
-      this.intervalId = window.setInterval(() => {
-        const temp = moment(`${this.date} ${this.time}`, 'YYYY-MM-DD HH:mm').add(15, 'minutes');
-        this.date = moment(temp, 'YYYY-MM-DD HH:mm').format('YYYY-MM-DD');
-        this.time = moment(temp, 'YYYY-MM-DD HH:mm').format('HH:mm');
-      }, 500);
+      if (!this.intervalId) {
+        this.intervalId = window.setInterval(() => {
+          if (!this.lock) {
+            this.lock = true;
+            const temp = moment(`${this.date} ${this.time}`, 'YYYY-MM-DD HH:mm').add(15, 'minutes');
+            this.date = moment(temp, 'YYYY-MM-DD HH:mm').format('YYYY-MM-DD');
+            this.time = moment(temp, 'YYYY-MM-DD HH:mm').format('HH:mm');
+            this.lock = false;
+          }
+        }, 30);
+      }
     },
     pause: function pause() {
-      window.clearInterval(this.intervalId);
+      this.intervalId = window.clearInterval(this.intervalId);
     },
     checkdate: function checkdate() {
       let floodingPromise;
@@ -78,12 +111,11 @@ export default {
       } else {
         rainPromise = Promise.resolve([]);
       }
-      Promise.join(rainPromise, floodingPromise,
+      return Promise.join(rainPromise, floodingPromise,
         (rainPoints, levelPoints) => {
-          console.log(levelPoints);
           const data = {
-            rainData: { data: rainPoints, options: { custScale: 0.5, weight: 2 } },
-            levelData: { data: levelPoints, options: { custScale: 0.5, weight: 1, color: 'red' } },
+            rainData: { data: rainPoints, options: { custScale: 0.5, weight: 1 } },
+            levelData: { data: levelPoints, options: {} },
           };
           this.$refs.map.pointsUpdate(data);
         });

@@ -5,7 +5,7 @@ const API_ROOT = 'http://192.168.1.131:3000/api/';
 const READING_ROOT = 'reading/';
 const LEVEL_ROOT = 'levels/';
 
-function dateTimeHandler(date, time) { //eslint-disable-line
+function dateTimeHandler(date, time) {
   let urlPromise;
   if (moment(date, 'YYYY-MM-DD').isValid() && moment(time, 'hh-mm').isValid()) {
     urlPromise = Promise.resolve(`${date}/${moment(time, 'hh:mm').format('hh-mm')}`);

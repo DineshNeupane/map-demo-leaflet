@@ -10,14 +10,6 @@ Vue.use(Vuex);
 
 /* eslint-disable no-new */
 new Vue({
-  data() {
-    return {
-      stations: {
-        lat: 51,
-        long: -2,
-      },
-    };
-  },
   el: '#app',
   router,
   template: '<App/>',
