@@ -12,6 +12,7 @@ const _ = require('lodash');
 let mapRef = {};
 let rainLayer;
 let floodLayer;
+let tideLayer;
 
 function mapGraph(data) {
   const zoom = mapRef.getZoom();
@@ -53,17 +54,22 @@ module.exports = {
     mapRef.addLayer(osm);
     rainLayer = new L.LayerGroup().addTo(mapRef);
     floodLayer = new L.LayerGroup().addTo(mapRef);
+    tideLayer = new L.LayerGroup().addTo(mapRef);
   },
   methods: {
     pointsUpdate(newData) {
       const tempRainLayer = mapGraph(newData.rainData);
       const tempFloodLayer = heatMap(newData.levelData);
+      const tempTideLayer = mapGraph(newData.tideData);
       tempRainLayer.addTo(mapRef);
       tempFloodLayer.addTo(mapRef);
+      tempTideLayer.addTo(mapRef);
       rainLayer.remove();
       floodLayer.remove();
+      tideLayer.remove();
       floodLayer = tempRainLayer;
       rainLayer = tempFloodLayer;
+      tideLayer = tempTideLayer;
     },
     clear(dataTypes) {
       if (dataTypes.rainData) {

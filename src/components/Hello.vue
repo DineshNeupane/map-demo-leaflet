@@ -13,6 +13,7 @@
     <input type="time" v-model="time" step="900"></input>
     <input type="checkbox" v-model="flooding">Flooding Data</input>
     <input type="checkbox" v-model="rainfall">Rainfall Data</input>
+    <input type="checkbox" v-model="tide">Tide Data</input>
     </div>
   </div>
 </template>
@@ -20,8 +21,7 @@
 <script>
 import MapView from './Map';
 import timestamp from './timestamp';
-import { getPoints, getLevels } from '../services/pointdb';
-// import { stationReadings } from '../services/gauge-api';
+import { getPoints, getLevels, getTide } from '../services/pointdb';
 
 const moment = require('moment');
 const Promise = require('bluebird');
@@ -36,6 +36,7 @@ export default {
       time: '00:00:00',
       flooding: true,
       rainfall: true,
+      tide: true,
       playing: true,
       points,
     };
@@ -101,6 +102,7 @@ export default {
     checkdate: function checkdate() {
       let floodingPromise;
       let rainPromise;
+      let tidePromise;
       if (this.flooding) {
         floodingPromise = getLevels(this.date, this.time);
       } else {
@@ -111,11 +113,17 @@ export default {
       } else {
         rainPromise = Promise.resolve([]);
       }
-      return Promise.join(rainPromise, floodingPromise,
-        (rainPoints, levelPoints) => {
+      if (this.tide) {
+        tidePromise = getTide(this.date, this.time);
+      } else {
+        tidePromise = Promise.resolve([]);
+      }
+      return Promise.join(rainPromise, floodingPromise, tidePromise,
+        (rainPoints, levelPoints, tidePoints) => {
           const data = {
             rainData: { data: rainPoints, options: { custScale: 0.5, weight: 1 } },
             levelData: { data: levelPoints, options: {} },
+            tideData: { data: tidePoints, options: { color: 'red', weight: 2, marker: { color: 'red', width: 10 } } },
           };
           this.$refs.map.pointsUpdate(data);
         });
@@ -138,4 +146,5 @@ export default {
   background-color: #333333;
   color: green;
 }
+
 </style>

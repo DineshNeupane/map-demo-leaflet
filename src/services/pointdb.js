@@ -4,6 +4,7 @@ const moment = require('moment');
 const API_ROOT = 'http://192.168.1.131:3000/api/';
 const READING_ROOT = 'reading/';
 const LEVEL_ROOT = 'levels/';
+const TIDE_ROOT = 'tide/';
 
 function dateTimeHandler(date, time) {
   let urlPromise;
@@ -30,5 +31,11 @@ export function getPoints(date, time) {
 export function getLevels(date, time) {
   return dateTimeHandler(date, time)
     .then(dateTimeString => getJSON(`${API_ROOT}${LEVEL_ROOT}${dateTimeString}`))
+    .then(response => response.body.data);
+}
+
+export function getTide(date, time) {
+  return dateTimeHandler(date, time)
+    .then(dateTimeString => getJSON(`${API_ROOT}${TIDE_ROOT}${dateTimeString}`))
     .then(response => response.body.data);
 }
