@@ -32,7 +32,7 @@ export default {
   name: 'hello',
   data() {
     return {
-      date: '2017-05-17',
+      date: '2017-03-04',
       time: '00:00:00',
       flooding: true,
       rainfall: true,
@@ -49,28 +49,28 @@ export default {
     this.play();
   },
   watch: {
-    date: function date() {
+    date() {
       this.update(this.date, this.time);
     },
-    time: function time() {
+    time() {
       this.update(this.date, this.time);
     },
-    flooding: function flooding() {
+    flooding() {
       this.update(this.date, this.time);
     },
-    rainfall: function rainfall() {
+    rainfall() {
       this.update(this.date, this.time);
     },
   },
   methods: {
-    togglePause: function togglePause() {
+    togglePause() {
       if (!this.intervalId) {
         this.play();
       } else {
         this.pause();
       }
     },
-    update: function update(date, time) {
+    update(date, time) {
       if (!this.lock) {
         this.lock = true;
         this.checkdate(date, time)
@@ -83,7 +83,7 @@ export default {
           });
       }
     },
-    play: function play() {
+    play() {
       if (!this.intervalId) {
         this.intervalId = window.setInterval(() => {
           if (!this.lock) {
@@ -93,13 +93,13 @@ export default {
             this.time = moment(temp, 'YYYY-MM-DD HH:mm').format('HH:mm');
             this.lock = false;
           }
-        }, 30);
+        }, 20);
       }
     },
-    pause: function pause() {
+    pause() {
       this.intervalId = window.clearInterval(this.intervalId);
     },
-    checkdate: function checkdate() {
+    checkdate() {
       let floodingPromise;
       let rainPromise;
       let tidePromise;

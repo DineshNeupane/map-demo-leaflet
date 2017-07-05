@@ -11,7 +11,7 @@
   module.exports = {
     name: 'timestamp',
     computed: {
-      datestring: function datestring() {
+      datestring() {
         return moment(`${this.date} ${this.time}`, 'YYYY-MM-DD HH-mm').format('MMMM Do YYYY, HH:mm');
       },
     },
