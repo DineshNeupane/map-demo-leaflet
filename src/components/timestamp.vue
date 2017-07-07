@@ -1,8 +1,6 @@
 <template>
   
-  <div id="bg">
-    {{datestring}}
-  </div>
+  <div id="bg">{{datestring}}</div>
 </template>
 
 <script>
