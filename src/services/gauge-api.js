@@ -51,8 +51,14 @@ export default function stationMeasures(stationId, options) {
 }
 
 export function stationReadings(startdate, enddate, options) {
-  const params = _.extend({ parameter: 'rainfall', startdate, enddate, _limit: '10000', _view: 'full' }, options);
-  console.log(params);
+  const defaults = {
+    parameter: 'rainfall',
+    startdate,
+    enddate,
+    _limit: '10000',
+    _view: 'full',
+  };
+  const params = _.extend(defaults, options);
   return getJSON(`${READINGS_ENDPOINT}`, params)
     .then(resultItems)
     .then(_.partial(wrapValues, Reading));

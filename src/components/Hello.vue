@@ -34,9 +34,9 @@ export default {
     return {
       date: '2017-03-04',
       time: '00:00:00',
-      flooding: true,
-      rainfall: true,
-      tide: true,
+      flooding: false,
+      rainfall: false,
+      tide: false,
       playing: true,
       points,
     };
@@ -88,7 +88,8 @@ export default {
         this.intervalId = window.setInterval(() => {
           if (!this.lock) {
             this.lock = true;
-            const temp = moment(`${this.date} ${this.time}`, 'YYYY-MM-DD HH:mm').add(15, 'minutes');
+            const temp = moment(`${this.date} ${this.time}`, 'YYYY-MM-DD HH:mm')
+              .add(15, 'minutes');
             this.date = moment(temp, 'YYYY-MM-DD HH:mm').format('YYYY-MM-DD');
             this.time = moment(temp, 'YYYY-MM-DD HH:mm').format('HH:mm');
             this.lock = false;
@@ -121,9 +122,18 @@ export default {
       return Promise.join(rainPromise, floodingPromise, tidePromise,
         (rainPoints, levelPoints, tidePoints) => {
           const data = {
-            rainData: { data: rainPoints, options: { custScale: 0.5, weight: 1 } },
+            rainData: {
+              data: rainPoints,
+              options: { custScale: 0.5, weight: 1 },
+            },
             levelData: { data: levelPoints, options: {} },
-            tideData: { data: tidePoints, options: { color: 'red', weight: 2, marker: { color: 'red', width: 10 } } },
+            tideData: {
+              data: tidePoints,
+              options: {
+                color: 'red',
+                weight: 2,
+                marker: { color: 'red', width: 10 } },
+            },
           };
           this.$refs.map.pointsUpdate(data);
         });

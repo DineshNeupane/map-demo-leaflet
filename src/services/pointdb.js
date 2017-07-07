@@ -9,7 +9,8 @@ const TIDE_ROOT = 'tide/';
 function dateTimeHandler(date, time) {
   let urlPromise;
   if (moment(date, 'YYYY-MM-DD').isValid() && moment(time, 'hh-mm').isValid()) {
-    urlPromise = Promise.resolve(`${date}/${moment(time, 'hh:mm').format('hh-mm')}`);
+    urlPromise =
+      Promise.resolve(`${date}/${moment(time, 'hh:mm').format('hh-mm')}`);
   } else {
     urlPromise = Promise.reject('Invalid date');
   }
@@ -24,13 +25,15 @@ export function getJSON(api) {
 
 export function getPoints(date, time) {
   return dateTimeHandler(date, time)
-    .then(dateTimeString => getJSON(`${API_ROOT}${READING_ROOT}${dateTimeString}`))
+    .then(dateTimeString =>
+      getJSON(`${API_ROOT}${READING_ROOT}${dateTimeString}`))
     .then(response => response.body.data);
 }
 
 export function getLevels(date, time) {
   return dateTimeHandler(date, time)
-    .then(dateTimeString => getJSON(`${API_ROOT}${LEVEL_ROOT}${dateTimeString}`))
+    .then(dateTimeString =>
+      getJSON(`${API_ROOT}${LEVEL_ROOT}${dateTimeString}`))
     .then(response => response.body.data);
 }
 

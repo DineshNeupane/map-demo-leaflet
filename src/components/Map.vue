@@ -50,8 +50,11 @@ module.exports = {
     mapRef = L.map('mapid').setView(new L.LatLng(52, -2), 7);
 
     const osmUrl = '//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-    const osmAttrib = "Map data © <a href='//openstreetmap.org'>OpenStreetMap</a> contributors";
-    const osm = new L.TileLayer(osmUrl, { minZoom: 0, maxZoom: 12, attribution: osmAttrib });
+    const osmAttrib =
+      "Map data © <a href='//openstreetmap.org'>OpenStreetMap</a> contributors";
+    const osm = new L.TileLayer(osmUrl, {
+      minZoom: 0, maxZoom: 12, attribution: osmAttrib,
+    });
 
     // start the map in South-East England
     mapRef.addLayer(osm);

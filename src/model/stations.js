@@ -23,8 +23,9 @@ function retrieveReadings(startdate, enddate) {
 
 export function readingsCollection(date) {
   const startdate = date;
-  const enddate = moment(date, 'YYYY-MM-DD').add(1, 'days').format('YYYY-MM-DD');
-  console.log(startdate, enddate);
+  const enddate = moment(date, 'YYYY-MM-DD')
+    .add(1, 'days')
+    .format('YYYY-MM-DD');
   return retrieveReadings(startdate, enddate);
 }
 
@@ -48,20 +49,21 @@ export default function getPoints(date) {
   }
   if (pointStore[date]) {
     if (pointStore[date].points) {
-      console.log('points', pointStore[date].points);
       return Promise.resolve(pointStore[date].points);
     }
-    console.log('promise', pointStore[date].promise);
     return pointStore[date].promise;
   }
-  const pointPromise = Promise.all([stationsCollection(), readingsCollection(date)])
+  const pointPromise =
+    Promise.all([stationsCollection(), readingsCollection(date)])
     .then((results) => {
       const stationValues = results[0];
-      console.log(stationValues);
       const readingValues = results[1];
       return readingValues.map((reading) => {
-        const station = _.find(stationValues, o =>
-          o.get('stationReference') === reading.get('measure.stationReference'));
+        const station = _.find(stationValues, (o) => {
+          const stationRef = o.get('stationReference');
+          const measureStationRef = reading.get('measure.stationReference');
+          return stationRef === measureStationRef;
+        });
         if (station) {
           const obj = {
             reference: station.reference(),
@@ -76,7 +78,6 @@ export default function getPoints(date) {
     .then((points) => {
       pointStore[date].points = points;
       if (typeof (Storage) !== 'undefined') {
-        console.log('local storage available');
         localStorage.setItem('pointStore', JSON.stringify(pointStore));
       }
       return points;

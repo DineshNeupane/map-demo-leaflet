@@ -12,7 +12,8 @@
     name: 'timestamp',
     computed: {
       datestring() {
-        return moment(`${this.date} ${this.time}`, 'YYYY-MM-DD HH-mm').format('MMMM Do YYYY, HH:mm');
+        return moment(`${this.date} ${this.time}`, 'YYYY-MM-DD HH-mm')
+          .format('MMMM Do YYYY, HH:mm');
       },
     },
     props: ['date', 'time'],
