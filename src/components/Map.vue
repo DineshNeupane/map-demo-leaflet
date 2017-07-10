@@ -21,11 +21,11 @@ function mapGraph(data) {
   const params = _.extend({}, data.options);
   if (data) {
     const locationPoints = data.data.map(point =>
-      L.circleMarker([point.lat, point.long], marker));
+      L.circleMarker([point.lat(), point.long()], marker));
     const features = data.data.map((point) => {
       const locations = [
-        [point.lat, point.long],
-        [point.lat + (point.value * scale), point.long],
+        [point.lat(), point.long()],
+        [point.lat() + (point.value() * scale), point.long()],
       ];
       return L.polyline(locations, params);
     });
@@ -38,7 +38,7 @@ function heatMap(data) {
   const params = _.extend({}, data.options);
   if (data) {
     const pointlocation = data.data.map(point =>
-      ([point.lat, point.long, parseFloat(point.value)]));
+      ([point.lat(), point.long(), point.value()]));
     return L.heatLayer(pointlocation, params);
   }
   return new L.LayerGroup();

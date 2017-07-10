@@ -3,6 +3,10 @@ var pointdb = require('../../../../src/services/pointdb.js');
 const request = require('superagent');
 const Promise = require('bluebird');
 
+import DataPoint from '../../../../src/model/dataPoint.js';
+import { testPoint, testServerResponse } from '../models/datapoint.js';
+
+
 describe('dateTimeHandler', () => {
   it('should accept correct date times', () => {
     return pointdb.dateTimeHandler('2017-05-05', '20-30').then((datestr) => {
@@ -30,7 +34,7 @@ describe('getPoints', function(){
       .stub(request, 'get')
       .returns({
         accept: function (blah) {
-          return Promise.resolve({body: {data: 'testdata'}});
+          return Promise.resolve(testServerResponse);
         }
       });
   });
@@ -42,7 +46,9 @@ describe('getPoints', function(){
   it('should return data from response', function(){
     return pointdb.getPoints('2017-05-30', '23-00')
       .then((json) => {
-        expect(json).to.equal('testdata');
+        expect(json).to.deep.equal([
+          new DataPoint(testPoint)
+        ]);
       })
   });
 });
@@ -53,7 +59,7 @@ describe('getLevels', function(){
       .stub(request, 'get')
       .returns({
         accept: function (blah) {
-          return Promise.resolve({body: {data: 'testdata'}});
+          return Promise.resolve(testServerResponse);
         }
       });
   });
@@ -65,7 +71,9 @@ describe('getLevels', function(){
   it('should return data from response', function(){
     return pointdb.getLevels('2017-05-30', '23-00')
       .then((json) => {
-        expect(json).to.equal('testdata');
+        expect(json).to.deep.equal([
+          new DataPoint(testPoint)
+        ]);
       })
   });
 });
@@ -76,7 +84,7 @@ describe('getTide', function(){
       .stub(request, 'get')
       .returns({
         accept: function (blah) {
-          return Promise.resolve({body: {data: 'testdata'}});
+          return Promise.resolve(testServerResponse);
         }
       });
   });
@@ -88,7 +96,9 @@ describe('getTide', function(){
   it('should return data from response', function(){
     return pointdb.getTide('2017-05-30', '23-00')
       .then((json) => {
-        expect(json).to.equal('testdata');
+        expect(json).to.deep.equal([
+          new DataPoint(testPoint)
+        ]);
       })
   });
 });
