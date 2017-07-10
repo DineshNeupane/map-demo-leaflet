@@ -94,7 +94,7 @@ export default {
             this.time = moment(temp, 'YYYY-MM-DD HH:mm').format('HH:mm');
             this.lock = false;
           }
-        }, 20);
+        }, 40);
       }
     },
     pause() {

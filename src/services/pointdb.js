@@ -6,11 +6,11 @@ const READING_ROOT = 'reading/';
 const LEVEL_ROOT = 'levels/';
 const TIDE_ROOT = 'tide/';
 
-function dateTimeHandler(date, time) {
+export function dateTimeHandler(date, time) {
   let urlPromise;
-  if (moment(date, 'YYYY-MM-DD').isValid() && moment(time, 'hh-mm').isValid()) {
+  if (moment(date, 'YYYY-MM-DD').isValid() && moment(time, 'HH-mm').isValid()) {
     urlPromise =
-      Promise.resolve(`${date}/${moment(time, 'hh:mm').format('hh-mm')}`);
+      Promise.resolve(`${date}/${moment(time, 'HH:mm').format('HH-mm')}`);
   } else {
     urlPromise = Promise.reject('Invalid date');
   }
