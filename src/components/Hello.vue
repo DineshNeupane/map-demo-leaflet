@@ -22,11 +22,17 @@
 import MapView from './Map';
 import timestamp from './timestamp';
 import { getPoints, getLevels, getTide } from '../services/pointdb';
+import
+  { tideReadings, riverReadings, rainReadings }
+    from '../services/tide-api';
+import { measureLocations } from '../model/stations';
 
 const moment = require('moment');
 const Promise = require('bluebird');
 
 const points = [];
+
+const measures = measureLocations();
 
 export default {
   name: 'hello',
@@ -34,9 +40,11 @@ export default {
     return {
       date: '2017-03-04',
       time: '00:00:00',
+      current: false,
       flooding: false,
-      rainfall: false,
+      rainfall: true,
       tide: false,
+      latest: false,
       playing: true,
       points,
     };
@@ -100,7 +108,47 @@ export default {
     pause() {
       this.intervalId = window.clearInterval(this.intervalId);
     },
-    checkdate() {
+    getLatest() {
+      let floodingPromise;
+      let rainPromise;
+      let tidePromise;
+      if (this.flooding) {
+        floodingPromise = riverReadings();
+      } else {
+        floodingPromise = Promise.resolve([]);
+      }
+      if (this.rainfall) {
+        rainPromise = rainReadings()
+          .then(rain =>
+            measures.then(locations =>
+              rain.map((reading) => {
+                let output;
+                if (locations[reading.measure()]) {
+                  output = {
+                    lat: locations[reading.measure()].lat,
+                    long: locations[reading.measure()].long,
+                    value: reading.value(),
+                  };
+                } else {
+                  output = null;
+                }
+                return output;
+              })));
+      } else {
+        rainPromise = Promise.resolve([]);
+      }
+      if (this.tide) {
+        tidePromise = tideReadings();
+      } else {
+        tidePromise = Promise.resolve([]);
+      }
+      return {
+        floodingPromise,
+        rainPromise,
+        tidePromise,
+      };
+    },
+    getDate() {
       let floodingPromise;
       let rainPromise;
       let tidePromise;
@@ -119,7 +167,23 @@ export default {
       } else {
         tidePromise = Promise.resolve([]);
       }
-      return Promise.join(rainPromise, floodingPromise, tidePromise,
+      return {
+        floodingPromise,
+        rainPromise,
+        tidePromise,
+      };
+    },
+    checkdate() {
+      let valuePromises;
+      if (this.latest) {
+        valuePromises = this.getLatest();
+      } else {
+        valuePromises = this.getDate();
+      }
+      return Promise.join(
+        valuePromises.rainPromise,
+        valuePromises.floodingPromise,
+        valuePromises.tidePromise,
         (rainPoints, levelPoints, tidePoints) => {
           const data = {
             rainData: {

@@ -1,5 +1,4 @@
 import _ from 'lodash';
-import stationMeasures from '../services/gauge-api';
 
 class Station {
   constructor(json) {
