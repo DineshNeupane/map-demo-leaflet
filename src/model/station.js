@@ -6,23 +6,23 @@ class Station {
   }
 
   riverName() {
-    return this.json.riverName;
+    return this.get('riverName');
   }
 
   lat() {
-    return this.json.lat;
+    return this.get('lat');
   }
 
   long() {
-    return this.json.long;
+    return this.get('long');
   }
 
   reference() {
-    return this.json.stationReference;
+    return this.get('stationReference');
   }
 
   measure() {
-    return stationMeasures(this.json.id);
+    return this.get('measures');
   }
 
   get(path) {
