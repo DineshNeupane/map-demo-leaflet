@@ -25,16 +25,12 @@ export class Reading {
     return moment(this.dateTimeStr()).utc();
   }
 
+  measure() {
+    return this.get('measure');
+  }
+
   jsDate() {
     return this.dateTime().toDate();
-  }
-
-  formattedTime() {
-    return this.dateTime().format('HH:mm:ss');
-  }
-
-  formattedDate() {
-    return this.dateTime().format(READINGS_DATE_FORMAT);
   }
 
   get(path) {
