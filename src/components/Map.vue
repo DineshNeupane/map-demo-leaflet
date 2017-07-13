@@ -16,20 +16,27 @@ let tideLayer;
 
 function mapGraph(data) {
   const zoom = mapRef.getZoom();
-  const scale = 10 / zoom;
+  const scale = 1 / zoom;
   const marker = _.extend({ radius: 3 }, data.options.marker);
   const params = _.extend({}, data.options);
   if (data) {
-    const locationPoints = data.data.map(point =>
-      L.circleMarker([point.lat(), point.long()], marker));
-    const features = data.data.map((point) => {
-      const locations = [
-        [point.lat(), point.long()],
-        [point.lat() + (point.value() * scale), point.long()],
-      ];
-      return L.polyline(locations, params);
-    });
-    return L.featureGroup(features.concat(locationPoints));
+    const locationPoints = data.data.reduce((result, point) => {
+      if (point.value() > 0) {
+        result.push(L.circleMarker([point.lat(), point.long()], marker));
+      }
+      return result;
+    }, []);
+    const features = data.data.reduce((result, point) => {
+      if (point.value() > 0) {
+        const locations = [
+          [point.lat(), point.long()],
+          [point.lat() + (point.value() * scale), point.long()],
+        ];
+        result.push(L.polyline(locations, params));
+      }
+      return result;
+    }, locationPoints);
+    return L.featureGroup(features);
   }
   return new L.LayerGroup();
 }
@@ -38,7 +45,7 @@ function heatMap(data) {
   const params = _.extend({}, data.options);
   if (data) {
     const pointlocation = data.data.map(point =>
-      ([point.lat(), point.long(), point.value()]));
+      ([point.lat(), point.long(), point.value() * 0.001]));
     return L.heatLayer(pointlocation, params);
   }
   return new L.LayerGroup();

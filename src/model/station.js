@@ -22,7 +22,11 @@ class Station {
   }
 
   measure() {
-    return this.get('measures');
+    let measures = [];
+    if (this.get('measures')) {
+      measures = this.get('measures');
+    }
+    return measures;
   }
 
   get(path) {
