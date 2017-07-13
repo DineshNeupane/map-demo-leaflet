@@ -1,5 +1,5 @@
 import Station from '../../../../src/model/station';
-import { testStation, testMeasures } from './datapoint';
+import { testStation, testMeasures, noMeasureStation } from './datapoint';
 
 describe('Station', () => {
   it('should return correct river name', () => {
@@ -25,5 +25,10 @@ describe('Station', () => {
   it('should return correct measures', () => {
     const station = new Station(testStation);
     expect(station.measure()).to.equal(testMeasures);
+  });
+
+  it('should return empty array if no measures', () => {
+    const station = new Station(noMeasureStation);
+    expect(station.measure()).to.deep.equal([]);
   });
 });
