@@ -1,6 +1,6 @@
 <template>
   <div class="hello" v-on:keyup.space="togglePause">
-    <MapView :points="points" ref="map"></MapView>
+    <MapView ref="map"></MapView>
     <DataForm
       @input="setData" ref="form"
     ></DataForm>
@@ -12,25 +12,17 @@
 import MapView from './Map';
 import DataForm from './DataForm';
 import timestamp from './timestamp';
-import
-  { rainReadings, tideReadings, riverReadings }
-    from '../services/tide-api';
-import { measureLocations } from '../model/stations';
-import PointStore from '../model/pointStore';
+import DataModel from '../model/dataModel';
 
 const moment = require('moment');
-const Promise = require('bluebird');
 
-const points = [];
-const rainStore = measureLocations()
-  .then(locations =>
-    new PointStore(90000, rainReadings, locations));
-const tideStore = measureLocations()
-  .then(locations =>
-    new PointStore(30000, tideReadings, locations));
-const levelStore = measureLocations()
-  .then(locations =>
-    new PointStore(250000, riverReadings, locations));
+const dataModel = new DataModel();
+const rainOptions = { color: 'blue', weight: 1 };
+const tideOptions = {
+  color: 'red',
+  weight: 1,
+  marker: { color: 'red', width: 10 },
+};
 
 function nearestQuarterHour() {
   const quarters = Math.floor(moment().minute() / 15) * 15;
@@ -43,15 +35,11 @@ export default {
     return {
       date: '2017-07-14',
       time: nearestQuarterHour(),
-      current: false,
       flooding: true,
       rainfall: true,
       tide: true,
       latest: true,
       day: false,
-      db: false,
-      playing: true,
-      points,
     };
   },
   components: {
@@ -64,47 +52,16 @@ export default {
   },
   watch: {
     date() {
-      if (this.flooding && this.day) {
-        levelStore.then(store => store.getDay(this.date));
-      }
-      if (this.rainfall && this.day) {
-        rainStore.then(store => store.getDay(this.date));
-      }
-      if (this.tide && this.day) {
-        tideStore.then(store => store.getDay(this.date));
-      }
-    },
-    flooding() {
-      if (this.flooding && this.day) {
-        levelStore.then(store => store.getDay(this.date));
-      }
-    },
-    rainfall() {
-      if (this.rainfall && this.day) {
-        rainStore.then(store => store.getDay(this.date));
-      }
-    },
-    tide() {
-      if (this.tide && this.day) {
-        tideStore.then(store => store.getDay(this.date));
-      }
+      dataModel.getDate(this.date, this.getSelected());
     },
   },
   methods: {
-    startLoading(toLoad) {
-      toLoad.map((dataType) => {
-        if (dataType.wanted) {
-          const toggle = {};
-          toggle[dataType.name] = true;
-          this.$refs.form.toggleLoad(toggle);
-          dataType.storePromise.then(store => store.getDay(this.date))
-            .then(() => {
-              this.play();
-              this.$refs.form.toggleLoad(toggle);
-            });
-        }
-        return null;
-      });
+    getSelected() {
+      return {
+        flooding: this.flooding,
+        tide: this.tide,
+        rainfall: this.rainfall,
+      };
     },
     setData(formData) {
       this.flooding = formData.flooding;
@@ -113,11 +70,9 @@ export default {
       this.date = formData.date;
       this.latest = false;
       this.day = true;
-      this.startLoading([
-        { name: 'flooding', wanted: this.flooding, storePromise: levelStore },
-        { name: 'rainfall', wanted: this.rainfall, storePromise: rainStore },
-        { name: 'tide', wanted: this.tide, storePromise: tideStore },
-      ]);
+      console.log(this.rainfall);
+      dataModel.getDate(this.date, this.getSelected());
+      this.play();
     },
     play() {
       if (!this.intervalId) {
@@ -132,64 +87,19 @@ export default {
     pause() {
       this.intervalId = window.clearInterval(this.intervalId);
     },
-    getLatest() {
-      let floodingPromise = Promise.resolve([]);
-      let rainPromise = Promise.resolve([]);
-      let tidePromise = Promise.resolve([]);
-      if (this.rainfall) {
-        rainPromise = rainStore.then(store => store.getLatest());
-      }
-      if (this.flooding) {
-        floodingPromise = levelStore.then(store => store.getLatest());
-      }
-      if (this.tide) {
-        tidePromise = tideStore.then(store => store.getLatest());
-      }
-      return Promise.join(floodingPromise, rainPromise, tidePromise,
-        (levelPoints, rainPoints, tidePoints) =>
-          ({ levelPoints, rainPoints, tidePoints }));
-    },
-    APIGetDate() {
-      let floodingPromise = Promise.resolve([]);
-      let rainPromise = Promise.resolve([]);
-      let tidePromise = Promise.resolve([]);
-      if (this.rainfall) {
-        rainPromise = rainStore.then(rain =>
-          rain.getPoint(`${this.date} ${this.time}`));
-      }
-      if (this.flooding) {
-        floodingPromise = levelStore.then(levels =>
-          levels.getPoint(`${this.date} ${this.time}`));
-      }
-      if (this.tide) {
-        tidePromise = tideStore.then(tides =>
-          tides.getPoint(`${this.date} ${this.time}`));
-      }
-      return Promise.join(rainPromise, floodingPromise, tidePromise,
-        (rainPoints, levelPoints, tidePoints) => ({
-          rainPoints, levelPoints, tidePoints }));
-    },
     checkdate() {
       let valuePromises;
       if (this.latest) {
-        valuePromises = this.getLatest();
+        valuePromises = dataModel.getLatest(this.getSelected());
       } else if (this.day) {
-        valuePromises = this.APIGetDate();
+        valuePromises =
+          dataModel.getAPIPoint(this.date, this.time, this.getSelected());
       }
       return valuePromises.then((values) => {
         const data = {
-          rainData: {
-            data: values.rainPoints,
-            options: { color: 'blue', weight: 1 },
-          },
+          rainData: { data: values.rainPoints, options: rainOptions },
           levelData: { data: values.levelPoints, options: {} },
-          tideData: {
-            data: values.tidePoints,
-            options: {
-              color: 'red',
-              weight: 1,
-              marker: { color: 'red', width: 10 } },
-          },
+          tideData: { data: values.tidePoints, options: tideOptions },
         };
         this.$refs.map.pointsUpdate(data);
       });
