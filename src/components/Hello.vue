@@ -1,27 +1,17 @@
 <template>
   <div class="hello" v-on:keyup.space="togglePause">
-    <MapView
-        :points="points"
-       ref="map"
-    >
-    </MapView>
-    <timestamp :date="date" :time="time">HELLO</timestamp>
-    <div class=controlBox>
-      Date
-      <input type="date" v-model="date"></input>
-    </div>
-    <div class=controlBox>
-      <input type="checkbox" v-model="flooding">Flooding Data</input>
-      <input type="checkbox" v-model="rainfall">Rainfall Data</input>
-      <input type="checkbox" v-model="tide">Tide Data</input>
-    </div>
+    <MapView :points="points" ref="map"></MapView>
+    <DataForm
+      @input="setData" ref="form"
+    ></DataForm>
+    <timestamp :date="date" :time="time"></timestamp>
   </div>
 </template>
 
 <script>
 import MapView from './Map';
+import DataForm from './DataForm';
 import timestamp from './timestamp';
-import { getPoints, getLevels, getTide } from '../services/pointdb';
 import
   { rainReadings, tideReadings, riverReadings }
     from '../services/tide-api';
@@ -42,18 +32,23 @@ const levelStore = measureLocations()
   .then(locations =>
     new PointStore(250000, riverReadings, locations));
 
+function nearestQuarterHour() {
+  const quarters = Math.floor(moment().minute() / 15) * 15;
+  return moment().set('minute', quarters).format('HH-mm');
+}
+
 export default {
   name: 'hello',
   data() {
     return {
       date: '2017-07-14',
-      time: '00-00',
+      time: nearestQuarterHour(),
       current: false,
-      flooding: false,
-      rainfall: false,
-      tide: false,
-      latest: false,
-      day: true,
+      flooding: true,
+      rainfall: true,
+      tide: true,
+      latest: true,
+      day: false,
       db: false,
       playing: true,
       points,
@@ -62,9 +57,9 @@ export default {
   components: {
     MapView,
     timestamp,
+    DataForm,
   },
   mounted() {
-    this.play();
     this.checkdate();
   },
   watch: {
@@ -78,50 +73,51 @@ export default {
       if (this.tide && this.day) {
         tideStore.then(store => store.getDay(this.date));
       }
-      this.update(this.date, this.time);
-    },
-    time() {
-      this.update(this.date, this.time);
     },
     flooding() {
       if (this.flooding && this.day) {
         levelStore.then(store => store.getDay(this.date));
       }
-      this.update(this.date, this.time);
     },
     rainfall() {
       if (this.rainfall && this.day) {
         rainStore.then(store => store.getDay(this.date));
       }
-      this.update(this.date, this.time);
     },
     tide() {
       if (this.tide && this.day) {
         tideStore.then(store => store.getDay(this.date));
       }
-      this.update(this.date, this.time);
     },
   },
   methods: {
-    togglePause() {
-      if (!this.intervalId) {
-        this.play();
-      } else {
-        this.pause();
-      }
+    startLoading(toLoad) {
+      toLoad.map((dataType) => {
+        if (dataType.wanted) {
+          const toggle = {};
+          toggle[dataType.name] = true;
+          this.$refs.form.toggleLoad(toggle);
+          dataType.storePromise.then(store => store.getDay(this.date))
+            .then(() => {
+              this.play();
+              this.$refs.form.toggleLoad(toggle);
+            });
+        }
+        return null;
+      });
     },
-    update(date, time) {
-      if (!this.lock) {
-        this.lock = true;
-        this.checkdate(date, time)
-          .then(() => {
-            this.lock = false;
-          })
-          .catch((error) => {
-            // Rejection, db connection failed
-            console.log(error);
-          });
-      }
+    setData(formData) {
+      this.flooding = formData.flooding;
+      this.rainfall = formData.rainfall;
+      this.tide = formData.tide;
+      this.date = formData.date;
+      this.latest = false;
+      this.day = true;
+      this.startLoading([
+        { name: 'flooding', wanted: this.flooding, storePromise: levelStore },
+        { name: 'rainfall', wanted: this.rainfall, storePromise: rainStore },
+        { name: 'tide', wanted: this.tide, storePromise: tideStore },
+      ]);
     },
     play() {
       if (!this.intervalId) {
@@ -129,7 +125,8 @@ export default {
           this.date = moment(this.date, 'YYYY-MM-DD').format('YYYY-MM-DD');
           this.time = moment(this.time, 'HH-mm')
             .add(15, 'minutes').format('HH-mm');
-        }, 30);
+          this.checkdate(this.date, this.time);
+        }, 50);
       }
     },
     pause() {
@@ -152,33 +149,23 @@ export default {
         (levelPoints, rainPoints, tidePoints) =>
           ({ levelPoints, rainPoints, tidePoints }));
     },
-    getDate() {
+    APIGetDate() {
       let floodingPromise = Promise.resolve([]);
       let rainPromise = Promise.resolve([]);
       let tidePromise = Promise.resolve([]);
-      if (this.flooding) {
-        floodingPromise = getLevels(this.date, this.time);
-      }
       if (this.rainfall) {
-        rainPromise = getPoints(this.date, this.time);
+        rainPromise = rainStore.then(rain =>
+          rain.getPoint(`${this.date} ${this.time}`));
+      }
+      if (this.flooding) {
+        floodingPromise = levelStore.then(levels =>
+          levels.getPoint(`${this.date} ${this.time}`));
       }
       if (this.tide) {
-        tidePromise = getTide(this.date, this.time);
+        tidePromise = tideStore.then(tides =>
+          tides.getPoint(`${this.date} ${this.time}`));
       }
-      return Promise.join(floodingPromise,
-        rainPromise,
-        tidePromise,
-        (levelPoints, rainPoints, tidePoints) =>
-          ({ levelPoints, rainPoints, tidePoints }));
-    },
-    newGetDate() {
-      const rainPromise = rainStore.then(rain =>
-        rain.getPoint(`${this.date} ${this.time}`));
-      const levelPromise = levelStore.then(levels =>
-        levels.getPoint(`${this.date} ${this.time}`));
-      const tidePromise = tideStore.then(tides =>
-        tides.getPoint(`${this.date} ${this.time}`));
-      return Promise.join(rainPromise, levelPromise, tidePromise,
+      return Promise.join(rainPromise, floodingPromise, tidePromise,
         (rainPoints, levelPoints, tidePoints) => ({
           rainPoints, levelPoints, tidePoints }));
     },
@@ -187,9 +174,7 @@ export default {
       if (this.latest) {
         valuePromises = this.getLatest();
       } else if (this.day) {
-        valuePromises = this.newGetDate();
-      } else {
-        valuePromises = this.getDate();
+        valuePromises = this.APIGetDate();
       }
       return valuePromises.then((values) => {
         const data = {
@@ -215,6 +200,7 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+
 .control {
   display: inline-block;
   height: 20px;

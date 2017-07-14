@@ -99,7 +99,7 @@ module.exports = {
 
 <style scoped>
 #mapid {
-  height: 80vh;
+  height: 92vh;
 }
 
 #divider {
