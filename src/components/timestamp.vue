@@ -1,6 +1,7 @@
 <template>
-  
-  <div id="bg">{{datestring}}</div>
+  <div>
+    <div class="bg">{{datestring}}</div>
+  </div>
 </template>
 
 <script>
@@ -19,7 +20,7 @@
 </script>
 
 <style scoped>
-#bg {
+.bg {
   height: 100px;
   width: 100%;
   background-color: #333333;

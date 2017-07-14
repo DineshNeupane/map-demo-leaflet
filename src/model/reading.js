@@ -21,6 +21,10 @@ export class Reading {
     return this.get('dateTime');
   }
 
+  moment() {
+    return moment(this.dateTimeStr()).format('YYYY-MM-DD HH-mm');
+  }
+
   dateTime() {
     return moment(this.dateTimeStr()).utc();
   }

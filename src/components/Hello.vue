@@ -6,14 +6,14 @@
     >
     </MapView>
     <timestamp :date="date" :time="time">HELLO</timestamp>
-    <div id=controlBox>
-      <div class=control v-on:click="play">PLAY</div>
-      <div class=control v-on:click="pause">PAUSE</div>
-    <input type="date" v-model="date"></input>
-    <input type="time" v-model="time" step="900"></input>
-    <input type="checkbox" v-model="flooding">Flooding Data</input>
-    <input type="checkbox" v-model="rainfall">Rainfall Data</input>
-    <input type="checkbox" v-model="tide">Tide Data</input>
+    <div class=controlBox>
+      Date
+      <input type="date" v-model="date"></input>
+    </div>
+    <div class=controlBox>
+      <input type="checkbox" v-model="flooding">Flooding Data</input>
+      <input type="checkbox" v-model="rainfall">Rainfall Data</input>
+      <input type="checkbox" v-model="tide">Tide Data</input>
     </div>
   </div>
 </template>
@@ -25,25 +25,36 @@ import { getPoints, getLevels, getTide } from '../services/pointdb';
 import
   { rainReadings, tideReadings, riverReadings }
     from '../services/tide-api';
-import { measureLocations, readingArrayToDataPoints } from '../model/stations';
+import { measureLocations } from '../model/stations';
+import PointStore from '../model/pointStore';
 
 const moment = require('moment');
 const Promise = require('bluebird');
 
 const points = [];
-
+const rainStore = measureLocations()
+  .then(locations =>
+    new PointStore(90000, rainReadings, locations));
+const tideStore = measureLocations()
+  .then(locations =>
+    new PointStore(30000, tideReadings, locations));
+const levelStore = measureLocations()
+  .then(locations =>
+    new PointStore(250000, riverReadings, locations));
 
 export default {
   name: 'hello',
   data() {
     return {
-      date: '2017-03-04',
-      time: '00:00:00',
+      date: '2017-07-14',
+      time: '00-00',
       current: false,
       flooding: false,
-      rainfall: true,
+      rainfall: false,
       tide: false,
-      latest: true,
+      latest: false,
+      day: true,
+      db: false,
       playing: true,
       points,
     };
@@ -54,18 +65,40 @@ export default {
   },
   mounted() {
     this.play();
+    this.checkdate();
   },
   watch: {
     date() {
+      if (this.flooding && this.day) {
+        levelStore.then(store => store.getDay(this.date));
+      }
+      if (this.rainfall && this.day) {
+        rainStore.then(store => store.getDay(this.date));
+      }
+      if (this.tide && this.day) {
+        tideStore.then(store => store.getDay(this.date));
+      }
       this.update(this.date, this.time);
     },
     time() {
       this.update(this.date, this.time);
     },
     flooding() {
+      if (this.flooding && this.day) {
+        levelStore.then(store => store.getDay(this.date));
+      }
       this.update(this.date, this.time);
     },
     rainfall() {
+      if (this.rainfall && this.day) {
+        rainStore.then(store => store.getDay(this.date));
+      }
+      this.update(this.date, this.time);
+    },
+    tide() {
+      if (this.tide && this.day) {
+        tideStore.then(store => store.getDay(this.date));
+      }
       this.update(this.date, this.time);
     },
   },
@@ -93,42 +126,31 @@ export default {
     play() {
       if (!this.intervalId) {
         this.intervalId = window.setInterval(() => {
-          if (!this.lock) {
-            this.lock = true;
-            const temp = moment(`${this.date} ${this.time}`, 'YYYY-MM-DD HH:mm')
-              .add(15, 'minutes');
-            this.date = moment(temp, 'YYYY-MM-DD HH:mm').format('YYYY-MM-DD');
-            this.time = moment(temp, 'YYYY-MM-DD HH:mm').format('HH:mm');
-            this.lock = false;
-          }
-        }, 40);
+          this.date = moment(this.date, 'YYYY-MM-DD').format('YYYY-MM-DD');
+          this.time = moment(this.time, 'HH-mm')
+            .add(15, 'minutes').format('HH-mm');
+        }, 30);
       }
     },
     pause() {
       this.intervalId = window.clearInterval(this.intervalId);
     },
     getLatest() {
-      return measureLocations()
-        .then((locations) => {
-          let floodingPromise = Promise.resolve([]);
-          let rainPromise = Promise.resolve([]);
-          let tidePromise = Promise.resolve([]);
-          if (this.rainfall) {
-            rainPromise = rainReadings()
-              .then(rain => readingArrayToDataPoints(locations, rain));
-          }
-          if (this.flooding) {
-            floodingPromise = riverReadings()
-              .then(levels => readingArrayToDataPoints(locations, levels));
-          }
-          if (this.tide) {
-            tidePromise = tideReadings()
-              .then(tides => readingArrayToDataPoints(locations, tides));
-          }
-          return Promise.join(floodingPromise, rainPromise, tidePromise,
-            (levelPoints, rainPoints, tidePoints) =>
-              ({ levelPoints, rainPoints, tidePoints }));
-        });
+      let floodingPromise = Promise.resolve([]);
+      let rainPromise = Promise.resolve([]);
+      let tidePromise = Promise.resolve([]);
+      if (this.rainfall) {
+        rainPromise = rainStore.then(store => store.getLatest());
+      }
+      if (this.flooding) {
+        floodingPromise = levelStore.then(store => store.getLatest());
+      }
+      if (this.tide) {
+        tidePromise = tideStore.then(store => store.getLatest());
+      }
+      return Promise.join(floodingPromise, rainPromise, tidePromise,
+        (levelPoints, rainPoints, tidePoints) =>
+          ({ levelPoints, rainPoints, tidePoints }));
     },
     getDate() {
       let floodingPromise = Promise.resolve([]);
@@ -149,10 +171,23 @@ export default {
         (levelPoints, rainPoints, tidePoints) =>
           ({ levelPoints, rainPoints, tidePoints }));
     },
+    newGetDate() {
+      const rainPromise = rainStore.then(rain =>
+        rain.getPoint(`${this.date} ${this.time}`));
+      const levelPromise = levelStore.then(levels =>
+        levels.getPoint(`${this.date} ${this.time}`));
+      const tidePromise = tideStore.then(tides =>
+        tides.getPoint(`${this.date} ${this.time}`));
+      return Promise.join(rainPromise, levelPromise, tidePromise,
+        (rainPoints, levelPoints, tidePoints) => ({
+          rainPoints, levelPoints, tidePoints }));
+    },
     checkdate() {
       let valuePromises;
       if (this.latest) {
         valuePromises = this.getLatest();
+      } else if (this.day) {
+        valuePromises = this.newGetDate();
       } else {
         valuePromises = this.getDate();
       }
@@ -188,7 +223,7 @@ export default {
   margin: 0 10px;
 }
 
-#controlBox {
+.controlBox {
   background-color: #333333;
   color: green;
 }

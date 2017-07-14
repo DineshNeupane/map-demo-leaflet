@@ -26,7 +26,7 @@ function wrapValues(ValueClass, items) {
 export function tideReadings(options) {
   const params =
     _.extend(
-      { latest: '', qualifier: 'Tidal Level', _limit: 10000 },
+      { qualifier: 'Tidal Level', _limit: 10000 },
       options);
   return getJSON(`${READINGS_ENDPOINT}`, params)
     .then(items => wrapValues(Reading, items));
@@ -35,7 +35,7 @@ export function tideReadings(options) {
 export function riverReadings(options) {
   const params =
     _.extend(
-      { latest: '', qualifier: 'Stage', _limit: 10000 },
+      { qualifier: 'Stage', _limit: 10000 },
       options);
   return getJSON(`${READINGS_ENDPOINT}`, params)
     .then(items => wrapValues(Reading, items));
@@ -44,14 +44,14 @@ export function riverReadings(options) {
 export function rainReadings(options) {
   const params =
     _.extend(
-      { latest: '', parameter: 'rainfall', _limit: 10000 },
+      { parameter: 'rainfall', _limit: 10000 },
       options);
   return getJSON(`${READINGS_ENDPOINT}`, params)
-    .then(items => wrapValues(Reading, items));
+      .then(items => wrapValues(Reading, items));
 }
 
 export function allStations(options) {
-  const params = _.extend({ _view: 'full' }, options);
+  const params = _.extend({}, options);
   return getJSON(STATIONS_ENDPOINT, params)
     .then(items => wrapValues(Station, items));
 }

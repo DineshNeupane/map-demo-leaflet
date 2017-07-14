@@ -7,6 +7,9 @@ const Promise = require('bluebird');
 let stations;
 let stationsPromise;
 
+let measures;
+let measuresPromise;
+
 function retrieveStations() {
   stationsPromise = allStations()
     .then((stns) => {
@@ -28,22 +31,31 @@ function stationsCollection() {
 }
 
 function measureLocations() {
-  return stationsCollection().then((stationlist) => {
-    const measureLocs = {};
-    stationlist.map((station) => {
-      station.measure().map((measureVal) => {
-        if (!measureLocs[measureVal['@id']]) {
-          measureLocs[measureVal['@id']] = {
-            lat: station.lat(),
-            long: station.long(),
-          };
-        }
+  let locationPromise;
+  if (measures) {
+    locationPromise = Promise.resolve(measures);
+  } else if (measuresPromise) {
+    locationPromise = measuresPromise;
+  } else {
+    measuresPromise = stationsCollection().then((stationlist) => {
+      const measureLocs = {};
+      stationlist.map((station) => {
+        station.measure().map((measureVal) => {
+          if (!measureLocs[measureVal['@id']]) {
+            measureLocs[measureVal['@id']] = {
+              lat: station.lat(),
+              long: station.long(),
+            };
+          }
+          return null;
+        });
         return null;
       });
-      return null;
+      return measureLocs;
     });
-    return measureLocs;
-  });
+    locationPromise = measuresPromise;
+  }
+  return locationPromise;
 }
 
 function latestValues() {
@@ -72,19 +84,23 @@ function latestValues() {
 }
 
 function readingArrayToDataPoints(locations, readings) {
-  return readings.reduce((result, reading) => {
-    if (locations[reading.measure()]) {
-      const val = {
-        lat: locations[reading.measure()].lat,
-        long: locations[reading.measure()].long,
-        value: reading.value(),
-      };
-      if (val.lat !== undefined || val.long !== undefined) {
-        result.push(new DataPoint(val));
+  let out = [];
+  if (readings) {
+    out = readings.reduce((result, reading) => {
+      if (locations[reading.measure()]) {
+        const val = {
+          lat: locations[reading.measure()].lat,
+          long: locations[reading.measure()].long,
+          value: reading.value(),
+        };
+        if (val.lat !== undefined || val.long !== undefined) {
+          result.push(new DataPoint(val));
+        }
       }
-    }
-    return result;
-  }, []);
+      return result;
+    }, []);
+  }
+  return out;
 }
 
 export { measureLocations, stationsCollection,
