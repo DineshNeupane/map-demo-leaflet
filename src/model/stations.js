@@ -51,6 +51,7 @@ function measureLocations() {
         });
         return null;
       });
+      measures = measureLocs;
       return measureLocs;
     });
     locationPromise = measuresPromise;
