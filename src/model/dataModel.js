@@ -5,6 +5,7 @@ import
     from '../services/tide-api';
 
 const Promise = require('bluebird');
+const moment = require('moment');
 
 export default class dataModel {
   constructor() {
@@ -18,10 +19,9 @@ export default class dataModel {
   }
 
   getLatest(requiredType) {
-    console.log(requiredType);
-    let floodingPromise = Promise.resolve([]);
     let rainPromise = Promise.resolve([]);
     let tidePromise = Promise.resolve([]);
+    let floodingPromise = Promise.resolve([]);
     if (requiredType.rainfall) {
       rainPromise = this.rainStorePromise.then(store => store.getLatest());
     }
@@ -65,15 +65,18 @@ export default class dataModel {
     let tidePromise = Promise.resolve([]);
     if (requiredType.rainfall) {
       rainPromise = this.rainStorePromise.then(rain =>
-        rain.getPoint(`${date} ${time}`));
+        rain.getPoint(moment(`${date} ${time}`, 'YYYY-MM-DD HH-mm')
+          .add(1, 'hour').format('YYYY-MM-DD HH-mm')));
     }
     if (requiredType.flooding) {
       floodingPromise = this.levelStorePromise.then(levels =>
-        levels.getPoint(`${date} ${time}`));
+        levels.getPoint(moment(`${date} ${time}`, 'YYYY-MM-DD HH-mm')
+          .add(1, 'hour').format('YYYY-MM-DD HH-mm')));
     }
     if (requiredType.tide) {
       tidePromise = this.tideStorePromise.then(tides =>
-        tides.getPoint(`${date} ${time}`));
+        tides.getPoint(moment(`${date} ${time}`, 'YYYY-MM-DD HH-mm')
+          .add(1, 'hour').format('YYYY-MM-DD HH-mm')));
     }
     return Promise.join(rainPromise, floodingPromise, tidePromise,
       (rainPoints, levelPoints, tidePoints) => ({

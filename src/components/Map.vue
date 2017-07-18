@@ -45,7 +45,7 @@ function heatMap(data) {
   const params = _.extend({}, data.options);
   if (data) {
     const pointlocation = data.data.map(point =>
-      ([point.lat(), point.long(), point.value() * 0.001]));
+      ([point.lat(), point.long(), point.value() * 0.005]));
     return L.heatLayer(pointlocation, params);
   }
   return new L.LayerGroup();
