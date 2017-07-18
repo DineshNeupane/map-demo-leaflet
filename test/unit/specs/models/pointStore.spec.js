@@ -4,7 +4,6 @@ import Point from '../../../../src/model/dataPoint';
 import { testReading, downstageMeasure } from './datapoint';
 
 describe('getLatest', () => {
-
   it('should return the latest value of the getterFunction', () => {
     const getter = sinon.stub()
       .returns(Promise.resolve([new Reading(testReading)]));
@@ -14,16 +13,15 @@ describe('getLatest', () => {
       long: -1.740083,
     };
     const pointStore = new PointStore(1, getter, testLocations);
-    return pointStore.getLatest().then((result) => {
-      return expect(result).to.deep.equal([
+    return pointStore.getLatest().then(result =>
+      expect(result).to.deep.equal([
         new Point({
-        lat: 51.874767,
-        long: -1.740083,
-        value: 0.4,
-      })]);
-    })
-  })
-})
+          lat: 51.874767,
+          long: -1.740083,
+          value: 0.4,
+        })]));
+  });
+});
 
 describe('getDay', () => {
   it('should call the getter once', () => {
@@ -36,9 +34,8 @@ describe('getDay', () => {
     };
     const pointStore = new PointStore(1000, getter, testLocations);
     return pointStore.getDay('2017-06-05')
-      .then((result) => {
-        return expect(getter.calledOnce).to.equal(true);
-      })
+      .then(() =>
+        expect(getter.calledOnce).to.equal(true));
   });
 
   it('should call the getter twice', () => {
@@ -51,9 +48,8 @@ describe('getDay', () => {
     };
     const pointStore = new PointStore(20000, getter, testLocations);
     return pointStore.getDay('2017-06-05')
-      .then((result) => {
-        return expect(getter.calledTwice).to.equal(true);
-      })
+      .then(() =>
+        expect(getter.calledTwice).to.equal(true));
   });
 
   it('should return promise if already polled', () => {
@@ -66,14 +62,13 @@ describe('getDay', () => {
     };
     const pointStore = new PointStore(20000, getter, testLocations);
     return pointStore.getDay('2017-06-05')
-      .then(() => {
-        return pointStore.getDay('2017-06-05')
+      .then(() =>
+        pointStore.getDay('2017-06-05')
           .then((out) => {
             expect(out).to.equal('already polled');
-          });
-      });
+          }));
   });
-})
+});
 
 describe('getPoints', () => {
   it('should return empty array if not polled', () => {
@@ -85,10 +80,9 @@ describe('getPoints', () => {
       long: -1.740083,
     };
     const pointStore = new PointStore(20000, getter, testLocations);
-    pointStore.getPoint('test date').then((out) =>
-      expect(out).to.deep.equal([])
-    );
-  })
+    pointStore.getPoint('test date').then(out =>
+      expect(out).to.deep.equal([]));
+  });
 
   it('should return array of points if polled', () => {
     const getter = sinon.stub()
@@ -101,14 +95,11 @@ describe('getPoints', () => {
     const pointStore = new PointStore(10000, getter, testLocations);
     pointStore.getDay('test').then(() =>
       pointStore.getPoint('2017-06-19 06-15')
-        .then((pointsArr) => {
-          console.log(pointsArr);
-          return expect(pointsArr).to.deep.equal([new Point({
+        .then(pointsArr =>
+          expect(pointsArr).to.deep.equal([new Point({
             lat: 51.874767,
             long: -1.740083,
             value: 0.4,
-          })])
-        })
-    );
-  })
-})
+          })])));
+  });
+});

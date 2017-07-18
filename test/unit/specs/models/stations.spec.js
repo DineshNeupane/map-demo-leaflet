@@ -1,7 +1,7 @@
-import { measureLocations, stationsCollection, latestValues, readingArrayToDataPoints}
+import { measureLocations, stationsCollection, readingArrayToDataPoints }
   from '../../../../src/model/stations';
-import { testTideReading, testRainReading, testRiverReading, testStation,
-  downstageMeasure, stageMeasure, testReading}
+import { testStation,
+  downstageMeasure, stageMeasure, testReading }
     from '../models/datapoint';
 import Station from '../../../../src/model/station';
 import { Reading } from '../../../../src/model/reading';
@@ -19,21 +19,18 @@ describe('stationsCollection', () => {
     tide.allStations.restore();
   });
 
-  it('should return the result of allStations first', () => {
-    return stationsCollection().then((result) => {
+  it('should return the result of allStations first', () =>
+    stationsCollection().then((result) => {
       expect(stub.calledOnce);
       expect(result).to.deep.equal([new Station(testStation)]);
-    });
-  });
+    }));
 
-  it('should return the saved version', () => {
-    return stationsCollection().then(() => {
-      return stationsCollection().then((result) => {
+  it('should return the saved version', () =>
+    stationsCollection().then(() =>
+      stationsCollection().then((result) => {
         expect(stub.calledOnce);
         expect(result).to.deep.equal([new Station(testStation)]);
-      });
-    });
-  });
+      })));
 });
 
 describe('measureLocations', () => {
@@ -46,8 +43,8 @@ describe('measureLocations', () => {
     tide.allStations.restore();
   });
 
-  it('should return object of ids and locations', () => {
-    return measureLocations().then((result) => {
+  it('should return object of ids and locations', () =>
+    measureLocations().then((result) => {
       const expectedOut = {};
       expectedOut[stageMeasure] = {
         lat: 51.874767,
@@ -58,8 +55,7 @@ describe('measureLocations', () => {
         long: -1.740083,
       };
       expect(result).to.deep.equal(expectedOut);
-    });
-  });
+    }));
 });
 /*
 describe('latestValues', () => {
@@ -94,11 +90,12 @@ describe('readingArrayToDataPoints', () => {
       lat: 51.874767,
       long: -1.740083,
     };
-    const result = readingArrayToDataPoints(testLocations, [new Reading(testReading)]);
+    const result =
+      readingArrayToDataPoints(testLocations, [new Reading(testReading)]);
     expect(result).to.deep.equal([new DataPoint({
       lat: 51.874767,
       long: -1.740083,
       value: 0.4,
     })]);
-  })
+  });
 });
