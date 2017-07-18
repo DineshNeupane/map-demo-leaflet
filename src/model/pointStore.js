@@ -12,9 +12,9 @@ function binReadings(readings) {
     }
     return null;
   });
-  console.log(bins);
   return bins;
 }
+
 
 /** Encapsulate a set of points for dates **/
 export default class PointStore {
@@ -30,7 +30,6 @@ export default class PointStore {
   getDay(date) {
     let completionPromise;
     if (!this.loadingDays[date]) {
-      console.log('getting day');
       this.loadingDays[date] = true;
       const getPromises = [];
       for (let i = 0; i < this.limit; i += 10000) {
@@ -38,10 +37,6 @@ export default class PointStore {
         getPromises.push(this.getterFunction({ date, '_offset': i }));
       }
       completionPromise = Promise.all(getPromises)
-        .then((out) => {
-          console.log(out);
-          return out;
-        })
         .then(out =>
           out.reduce((all, page) =>
             all.concat(page)
@@ -59,7 +54,6 @@ export default class PointStore {
         })
         .then((result) => {
           this.points = _.extend(this.points, result);
-          console.log(this.points);
           return Promise.resolve('complete');
         });
     } else {
