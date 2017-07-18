@@ -9,8 +9,7 @@ const STATIONS_ENDPOINT = '/flood-monitoring/id/stations';
 const READINGS_ENDPOINT = '/flood-monitoring/data/readings';
 
 function getJSON(apiPath, params) {
-  const protocol =
-    window.location.protocol !== 'about:' ? window.location.protocol : 'https:';
+  const protocol = 'https:';
   const api = protocol + API_ROOT + apiPath;
   const reqPromise = request
       .get(api)
