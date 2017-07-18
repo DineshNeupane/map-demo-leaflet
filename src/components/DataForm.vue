@@ -4,7 +4,9 @@
         Select a date and data to display
       </div>
       <div>
-        <input type="date" v-model="date"></input>
+        <!--potentially use vue date here -->
+        <input type="date" v-model="date" v-bind:min="min" v-bind:max="max">
+        </input>
       </div>
       <div class="dataTypes">
           <input type="checkbox" v-model='flooding'>Flooding</input>
@@ -23,6 +25,7 @@
 </template>
 
 <script>
+const moment = require('moment');
 
 export default {
   name: 'form',
@@ -33,6 +36,8 @@ export default {
       flooding: false,
       rainfall: false,
       tide: false,
+      min: moment().subtract(30, 'days').format('YYYY-MM-DD'),
+      max: moment().format('YYYY-MM-DD'),
     };
   },
   computed() {
