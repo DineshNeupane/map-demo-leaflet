@@ -1,11 +1,12 @@
-import { measureLocations, stationsCollection, latestValues }
+import { measureLocations, stationsCollection, latestValues, readingArrayToDataPoints}
   from '../../../../src/model/stations';
 import { testTideReading, testRainReading, testRiverReading, testStation,
-  downstageMeasure, stageMeasure }
+  downstageMeasure, stageMeasure, testReading}
     from '../models/datapoint';
 import Station from '../../../../src/model/station';
 import { Reading } from '../../../../src/model/reading';
 import * as tide from '../../../../src/services/tide-api';
+import DataPoint from '../../../../src/model/dataPoint';
 
 describe('stationsCollection', () => {
   let stub;
@@ -85,3 +86,19 @@ describe('latestValues', () => {
     });
   });
 });*/
+
+describe('readingArrayToDataPoints', () => {
+  it('should convert reading to dataPoint', () => {
+    const testLocations = {};
+    testLocations[downstageMeasure] = {
+      lat: 51.874767,
+      long: -1.740083,
+    };
+    const result = readingArrayToDataPoints(testLocations, [new Reading(testReading)]);
+    expect(result).to.deep.equal([new DataPoint({
+      lat: 51.874767,
+      long: -1.740083,
+      value: 0.4,
+    })]);
+  })
+});
