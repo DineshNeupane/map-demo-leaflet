@@ -37,19 +37,24 @@ export default class dataModel {
   }
 
   getDate(date, requiredType) {
-    console.log(requiredType);
     const loadPromises = {};
     if (requiredType.rainfall) {
-      loadPromises.rain =
-        this.rainStorePromise.then(store => store.getDay(date));
+      loadPromises.rain = {
+        promise: this.rainStorePromise.then(store => store.getDay(date)),
+        type: 'rainfall',
+      };
     }
     if (requiredType.flooding) {
-      loadPromises.level =
-        this.levelStorePromise.then(store => store.getDay(date));
+      loadPromises.level = {
+        promise: this.levelStorePromise.then(store => store.getDay(date)),
+        type: 'level',
+      };
     }
     if (requiredType.tide) {
-      loadPromises.tide =
-        this.tideStorePromise.then(store => store.getDay(date));
+      loadPromises.tide = {
+        promise: this.tideStorePromise.then(store => store.getDay(date)),
+        type: 'tide',
+      };
     }
     return loadPromises;
   }

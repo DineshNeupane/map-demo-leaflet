@@ -71,8 +71,18 @@ export default {
       this.latest = false;
       this.day = true;
       console.log(this.rainfall);
-      dataModel.getDate(this.date, this.getSelected());
-      this.play();
+      const datePromises = dataModel.getDate(this.date, this.getSelected());
+      this.$refs.form.toggleLoad(this.getSelected());
+      Object.keys(datePromises).map(key =>
+        datePromises[key].promise.then(() => {
+          const loadObj = {};
+          loadObj[datePromises[key].type] = true;
+          console.log(loadObj);
+          this.$refs.form.toggleLoad(loadObj);
+          this.play();
+          return null;
+        }),
+      );
     },
     play() {
       if (!this.intervalId) {
