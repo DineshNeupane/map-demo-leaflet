@@ -2,6 +2,8 @@ import { readingArrayToDataPoints } from '../model/stations';
 
 const _ = require('lodash');
 
+const API_READING_LIMIT = 10000;
+
 // Takes an array of readings and forms an object keyed by datetime string
 // where the value is an array of data points for that time
 function binReadings(readings) {
@@ -31,39 +33,40 @@ export default class PointStore {
   // Stores points for required day
   getDay(date) {
     let completionPromise;
-    const getPromises = [];
+    const pagePromises = [];
     if (!this.loadingDays[date]) {
       this.loadingDays[date] = true;
-      for (let i = 0; i < this.limit; i += 10000) {
+      for (let i = 0; i < this.limit; i += API_READING_LIMIT) {
         // eslint-disable-next-line
-        getPromises.push(this.getterFunction({ date, '_offset': i }));
+        pagePromises.push(this.getterFunction({ date, '_offset': i }));
       }
-      completionPromise = Promise.all(getPromises)
-        .then(out =>
-          out.reduce((all, page) =>
-            all.concat(page)
-          , []),
+      completionPromise = Promise.all(pagePromises)
+        .then(pages =>
+          // take array of array of readings and convert them to a single array
+          // of readings
+          pages.reduce((all, page) => all.concat(page), []),
         )
         .then(readings =>
           binReadings(readings))
-        .then((result) => {
-          const out = {};
-          Object.keys(result).map((key) => {
-            out[key] = readingArrayToDataPoints(this.locations, result[key]);
+        .then((binnedReadings) => {
+          const dataPointsByDatetime = {};
+          Object.keys(binnedReadings).map((key) => {
+            dataPointsByDatetime[key] =
+              readingArrayToDataPoints(this.locations, binnedReadings[key]);
             return null;
           });
-          return out;
+          return dataPointsByDatetime;
         })
-        .then((result) => {
-          this.points = _.extend(this.points, result);
+        .then((dataPoints) => {
+          this.points = _.extend(this.points, dataPoints);
           return Promise.resolve('complete');
         });
     } else {
       completionPromise = Promise.resolve('already polled');
     }
     return {
-      total: this.limit / 10000,
-      getPromises,
+      total: this.limit / API_READING_LIMIT,
+      pagePromises,
       completionPromise,
     };
   }

@@ -84,7 +84,7 @@ export default {
             this.play();
             return null;
           });
-          out.getPromises.map(promise =>
+          out.pagePromises.map(promise =>
             promise.then(() => {
               done += 1;
               const loadObj = {};

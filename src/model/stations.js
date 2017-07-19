@@ -36,10 +36,13 @@ function stationsCollection() {
 // measure station
 function measureLocations() {
   let locationPromise;
+  // Measures already available
   if (measures) {
     locationPromise = Promise.resolve(measures);
+  // Promise of measures available
   } else if (measuresPromise) {
     locationPromise = measuresPromise;
+  // Compute measures
   } else {
     measuresPromise = stationsCollection().then((stationlist) => {
       const measureLocs = {};
@@ -63,26 +66,25 @@ function measureLocations() {
   return locationPromise;
 }
 
+function getPointFromReading(reading, locations) {
+  return {
+    lat: locations[reading.measure()].lat,
+    long: locations[reading.measure()].long,
+    value: reading.value(),
+  };
+}
+
 function latestValues() {
   return measureLocations()
     .then(locations =>
       Promise.join(tideReadings(), riverReadings(), rainReadings(),
         (tideResults, riverResults, rainResults) => {
-          const tide = tideResults.map(tidalLevel => ({
-            lat: locations[tidalLevel.measure()].lat,
-            long: locations[tidalLevel.measure()].long,
-            value: tidalLevel.value(),
-          }));
-          const river = riverResults.map(riverLevel => ({
-            lat: locations[riverLevel.measure()].lat,
-            long: locations[riverLevel.measure()].long,
-            value: riverLevel.value(),
-          }));
-          const rain = rainResults.map(rainLevel => ({
-            lat: locations[rainLevel.measure()].lat,
-            long: locations[rainLevel.measure()].long,
-            value: rainLevel.value(),
-          }));
+          const tide = tideResults.map(tidalLevel =>
+            getPointFromReading(tidalLevel, locations));
+          const river = riverResults.map(riverLevel =>
+            getPointFromReading(riverLevel, locations));
+          const rain = rainResults.map(rainLevel =>
+            getPointFromReading(rainLevel, locations));
           return { tide, river, rain };
         }),
     );
@@ -90,23 +92,19 @@ function latestValues() {
 
 // Converts array of Readings to array of dataPoints
 function readingArrayToDataPoints(locations, readings) {
-  let out = [];
+  let dataPointsArray = [];
   if (readings) {
-    out = readings.reduce((result, reading) => {
+    dataPointsArray = readings.reduce((dataPoints, reading) => {
       if (locations[reading.measure()]) {
-        const val = {
-          lat: locations[reading.measure()].lat,
-          long: locations[reading.measure()].long,
-          value: reading.value(),
-        };
+        const val = getPointFromReading(reading, locations);
         if (val.lat !== undefined || val.long !== undefined) {
-          result.push(new DataPoint(val));
+          dataPoints.push(new DataPoint(val));
         }
       }
-      return result;
+      return dataPoints;
     }, []);
   }
-  return out;
+  return dataPointsArray;
 }
 
 export { measureLocations, stationsCollection,
