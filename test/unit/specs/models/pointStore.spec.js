@@ -33,7 +33,7 @@ describe('getDay', () => {
       long: -1.740083,
     };
     const pointStore = new PointStore(1000, getter, testLocations);
-    return pointStore.getDay('2017-06-05')
+    return pointStore.getDay('2017-06-05').completionPromise
       .then(() =>
         expect(getter.calledOnce).to.equal(true));
   });
@@ -47,7 +47,7 @@ describe('getDay', () => {
       long: -1.740083,
     };
     const pointStore = new PointStore(20000, getter, testLocations);
-    return pointStore.getDay('2017-06-05')
+    return pointStore.getDay('2017-06-05').completionPromise
       .then(() =>
         expect(getter.calledTwice).to.equal(true));
   });
@@ -61,9 +61,9 @@ describe('getDay', () => {
       long: -1.740083,
     };
     const pointStore = new PointStore(20000, getter, testLocations);
-    return pointStore.getDay('2017-06-05')
+    return pointStore.getDay('2017-06-05').completionPromise
       .then(() =>
-        pointStore.getDay('2017-06-05')
+        pointStore.getDay('2017-06-05').completionPromise
           .then((out) => {
             expect(out).to.equal('already polled');
           }));
@@ -93,7 +93,7 @@ describe('getPoints', () => {
       long: -1.740083,
     };
     const pointStore = new PointStore(10000, getter, testLocations);
-    pointStore.getDay('test').then(() =>
+    pointStore.getDay('test').completionPromise.then(() =>
       pointStore.getPoint('2017-06-19 06-15')
         .then(pointsArr =>
           expect(pointsArr).to.deep.equal([new Point({

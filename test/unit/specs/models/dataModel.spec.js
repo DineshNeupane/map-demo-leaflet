@@ -1,5 +1,4 @@
 import DataModel from '../../../../src/model/dataModel';
-import * as readings from '../../../../src/services/tide-api';
 import Point from '../../../../src/model/dataPoint';
 import PointStore from '../../../../src/model/pointStore';
 
@@ -46,39 +45,6 @@ describe('DataModel', () => {
           expect(out.rainPoints).to.deep.equal(testPoint);
           expect(out.tidePoints).to.deep.equal(testPoint);
         });
-    });
-  });
-
-  describe('getDate', () => {
-    before(() => {
-      sinon.stub(PointStore.prototype, 'getDay').callsFake(() =>
-        Promise.resolve('complete'));
-    });
-
-    after(() => {
-      PointStore.prototype.getDay.restore();
-    });
-
-    it('should return promises for each dataType', () => {
-      const test = new DataModel();
-      const loadPromises = test.getDate('2017-06-05', {
-        rainfall: true,
-        tide: true,
-        flooding: true,
-      });
-
-      loadPromises.level.promise.then((levelout) => {
-        expect(levelout).to.deep.equal('complete');
-        expect(loadPromises.level.type).to.deep.equal('level');
-      });
-      loadPromises.rain.promise.then((rainout) => {
-        expect(rainout).to.deep.equal('complete');
-        expect(loadPromises.rain.type).to.deep.equal('level');
-      });
-      loadPromises.tide.promise.then((tideout) => {
-        expect(tideout).to.deep.equal('complete');
-        expect(loadPromises.tide.type).to.deep.equal('tide');
-      });
     });
   });
 
