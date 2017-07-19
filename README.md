@@ -1,6 +1,6 @@
-# map-prototype
+# Flood Monitoring API Demonstrator
 
-> A Vue.js project
+An app for displaying UK Rainfall, River Level and Tidal Data
 
 ## Build Setup
 
@@ -8,7 +8,7 @@
 # install dependencies
 npm install
 
-# serve with hot reload at localhost:8080
+# serve with hot reload at localhost:9000
 npm run dev
 
 # build for production with minification
@@ -26,5 +26,3 @@ npm run e2e
 # run all tests
 npm test
 ```
-
-For detailed explanation on how things work, checkout the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
