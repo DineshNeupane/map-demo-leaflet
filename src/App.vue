@@ -6,6 +6,8 @@
 
 <script>
 
+require('date-input-polyfill');
+
 export default {
   name: 'app',
 };
@@ -23,4 +25,9 @@ export default {
 body {
   margin: 0;
 }
+
+date-input-polyfill {
+  z-index: 1002;
+}
+
 </style>
