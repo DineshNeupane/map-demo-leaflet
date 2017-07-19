@@ -46,19 +46,22 @@ export default class dataModel {
     if (requiredType) {
       if (requiredType.rainfall) {
         loadPromises.rain = {
-          promise: this.rainStorePromise.then(store => store.getDay(date)),
+          promise: this.rainStorePromise
+            .then(store => store.getDay(date)),
           type: 'rainfall',
         };
       }
       if (requiredType.flooding) {
         loadPromises.level = {
-          promise: this.levelStorePromise.then(store => store.getDay(date)),
-          type: 'level',
+          promise: this.levelStorePromise
+            .then(store => store.getDay(date)),
+          type: 'flooding',
         };
       }
       if (requiredType.tide) {
         loadPromises.tide = {
-          promise: this.tideStorePromise.then(store => store.getDay(date)),
+          promise: this.tideStorePromise
+            .then(store => store.getDay(date)),
           type: 'tide',
         };
       }

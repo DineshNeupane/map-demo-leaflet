@@ -3,20 +3,33 @@
       <div>
         Select a date and data to display
       </div>
-      <div>
+      <div class="dateBox">
         <!--potentially use vue date here -->
         <input type="date" v-model="date" v-bind:min="min" v-bind:max="max">
         </input>
       </div>
       <div class="dataTypes">
-          <input type="checkbox" v-model='flooding'>Flooding</input>
-          <input type="checkbox" v-model='rainfall'>Rainfall</input>
-          <input type="checkbox" v-model='tide'>Tide</input>
-      </div>
-      <div>
-        <div class="notloading load" id="floodload">loading</div>
-        <div class="notloading load" id="rainload">loading</div>
-        <div class="notloading load" id="tideload">loading</div>
+          <div>
+            <input class="checkbox" type="checkbox" v-model='flooding'></input>
+            <span>Flooding </span>
+            <span class="notloading load" id="floodload">
+              Loading {{floodProgress}}
+            </span>
+          </div>
+          <div>
+            <input class="checkbox" type="checkbox" v-model='rainfall'></input>
+            Rainfall
+            <span class="notloading load" id="rainload">
+              Loading {{rainProgress}}
+            </span>
+          </div>
+          <div>
+            <input class="checkbox" type="checkbox" v-model='tide'></input>
+            Tide
+            <span class="notloading load" id="tideload">
+              Loading {{tideProgress}}
+            </span>
+          </div>
       </div>
       <div>
         <button v-on:click="update()">Submit</button>
@@ -36,6 +49,9 @@ export default {
       flooding: false,
       rainfall: false,
       tide: false,
+      floodProgress: '',
+      rainProgress: '',
+      tideProgress: '',
       min: moment().subtract(30, 'days').format('YYYY-MM-DD'),
       max: moment().format('YYYY-MM-DD'),
     };
@@ -70,12 +86,27 @@ export default {
         tideload.classList.toggle('notloading');
       }
     },
+    loadingPercent(percentObj) {
+      if (percentObj.flooding) {
+        this.floodProgress = `${Math.floor(percentObj.flooding * 100)}%`;
+      }
+      if (percentObj.rainfall) {
+        this.rainProgress = `${Math.floor(percentObj.rainfall * 100)}%`;
+      }
+      if (percentObj.tide) {
+        this.tideProgress = `${Math.floor(percentObj.tide * 100)}%`;
+      }
+    },
   },
 };
 
 </script>
 
 <style scoped>
+
+.dateBox {
+  margin: 10px 0;
+}
 
 .notloading {
   visibility: hidden;
@@ -91,13 +122,21 @@ export default {
 }
 
 .load {
-  margin: 0 auto;
   display: inline-block;
+  float: right;
 }
 
 .dataType {
   display: inline-block;
   padding: 10px;
+}
+
+.dataTypes {
+  text-align: left;
+}
+
+.dataTypes div {
+  padding: 0 15px;
 }
 
 </style>

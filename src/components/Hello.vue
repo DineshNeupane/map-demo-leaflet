@@ -73,13 +73,24 @@ export default {
       const datePromises = dataModel.getDate(this.date, this.getSelected());
       this.$refs.form.toggleLoad(this.getSelected());
       Object.keys(datePromises).map(key =>
-        datePromises[key].promise.then(() => {
-          const loadObj = {};
-          loadObj[datePromises[key].type] = true;
-          this.$refs.form.toggleLoad(loadObj);
-          this.time = '00-00';
-          this.play();
-          return null;
+        datePromises[key].promise.then((out) => {
+          let done = 0;
+          const total = out.total;
+          out.completionPromise.then(() => {
+            const loadObj = {};
+            loadObj[datePromises[key].type] = true;
+            this.$refs.form.toggleLoad(loadObj);
+            this.time = '00-00';
+            this.play();
+            return null;
+          });
+          out.getPromises.map(promise =>
+            promise.then(() => {
+              done += 1;
+              const loadObj = {};
+              loadObj[datePromises[key].type] = done / total;
+              this.$refs.form.loadingPercent(loadObj);
+            }));
         }),
       );
     },

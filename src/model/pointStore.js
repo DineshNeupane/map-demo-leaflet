@@ -31,9 +31,9 @@ export default class PointStore {
   // Stores points for required day
   getDay(date) {
     let completionPromise;
+    const getPromises = [];
     if (!this.loadingDays[date]) {
       this.loadingDays[date] = true;
-      const getPromises = [];
       for (let i = 0; i < this.limit; i += 10000) {
         // eslint-disable-next-line
         getPromises.push(this.getterFunction({ date, '_offset': i }));
@@ -61,7 +61,11 @@ export default class PointStore {
     } else {
       completionPromise = Promise.resolve('already polled');
     }
-    return completionPromise;
+    return {
+      total: this.limit / 10000,
+      getPromises,
+      completionPromise,
+    };
   }
 
   getLatest() {
