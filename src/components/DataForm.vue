@@ -32,7 +32,7 @@ export default {
   props: ['latest', 'day'],
   data() {
     return {
-      date: '2017-07-05',
+      date: moment().format('YYYY-MM-DD'),
       flooding: false,
       rainfall: false,
       tide: false,
@@ -42,7 +42,6 @@ export default {
   },
   computed() {
     return {
-      date: this.date,
       flooding: this.flooding,
       rainfall: this.rainfall,
       tide: this.tide,

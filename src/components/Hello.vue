@@ -33,7 +33,7 @@ export default {
   name: 'hello',
   data() {
     return {
-      date: '2017-07-14',
+      date: moment().format('YYYY-MM-DD HH-mm'),
       time: nearestQuarterHour(),
       flooding: true,
       rainfall: true,
