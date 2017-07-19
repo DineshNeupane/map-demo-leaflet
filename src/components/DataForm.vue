@@ -10,10 +10,10 @@
       </div>
       <div class="dataTypes">
           <div>
-            <input class="checkbox" type="checkbox" v-model='flooding'></input>
-            <span>Flooding </span>
-            <span class="notloading load" id="floodload">
-              Loading {{floodProgress}}
+            <input class="checkbox" type="checkbox" v-model='tide'></input>
+            Tide
+            <span class="notloading load" id="tideload">
+              Loading {{tideProgress}}
             </span>
           </div>
           <div>
@@ -24,10 +24,10 @@
             </span>
           </div>
           <div>
-            <input class="checkbox" type="checkbox" v-model='tide'></input>
-            Tide
-            <span class="notloading load" id="tideload">
-              Loading {{tideProgress}}
+            <input class="checkbox" type="checkbox" v-model='flooding'></input>
+            <span>Flooding </span>
+            <span class="notloading load" id="floodload">
+              Loading {{floodProgress}}
             </span>
           </div>
       </div>
@@ -45,7 +45,7 @@ export default {
   props: ['latest', 'day'],
   data() {
     return {
-      date: moment().format('YYYY-MM-DD'),
+      date: moment().subtract(1, 'day').format('YYYY-MM-DD'),
       flooding: false,
       rainfall: false,
       tide: false,
@@ -76,14 +76,17 @@ export default {
       if (toToggle.flooding) {
         const floodload = document.getElementById('floodload');
         floodload.classList.toggle('notloading');
+        this.floodProgress = '';
       }
       if (toToggle.rainfall) {
         const rainload = document.getElementById('rainload');
         rainload.classList.toggle('notloading');
+        this.rainProgress = '';
       }
       if (toToggle.tide) {
         const tideload = document.getElementById('tideload');
         tideload.classList.toggle('notloading');
+        this.tideProgress = '';
       }
     },
     loadingPercent(percentObj) {
