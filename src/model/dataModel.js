@@ -23,14 +23,17 @@ export default class dataModel {
     let rainPromise = Promise.resolve([]);
     let tidePromise = Promise.resolve([]);
     let floodingPromise = Promise.resolve([]);
-    if (requiredType.rainfall) {
-      rainPromise = this.rainStorePromise.then(store => store.getLatest());
-    }
-    if (requiredType.flooding) {
-      floodingPromise = this.levelStorePromise.then(store => store.getLatest());
-    }
-    if (requiredType.tide) {
-      tidePromise = this.tideStorePromise.then(store => store.getLatest());
+    if (requiredType) {
+      if (requiredType.rainfall) {
+        rainPromise = this.rainStorePromise.then(store => store.getLatest());
+      }
+      if (requiredType.flooding) {
+        floodingPromise =
+          this.levelStorePromise.then(store => store.getLatest());
+      }
+      if (requiredType.tide) {
+        tidePromise = this.tideStorePromise.then(store => store.getLatest());
+      }
     }
     return Promise.join(floodingPromise, rainPromise, tidePromise,
       (levelPoints, rainPoints, tidePoints) =>
@@ -40,23 +43,25 @@ export default class dataModel {
   // Calls getters from requiredType to get data for date
   getDate(date, requiredType) {
     const loadPromises = {};
-    if (requiredType.rainfall) {
-      loadPromises.rain = {
-        promise: this.rainStorePromise.then(store => store.getDay(date)),
-        type: 'rainfall',
-      };
-    }
-    if (requiredType.flooding) {
-      loadPromises.level = {
-        promise: this.levelStorePromise.then(store => store.getDay(date)),
-        type: 'level',
-      };
-    }
-    if (requiredType.tide) {
-      loadPromises.tide = {
-        promise: this.tideStorePromise.then(store => store.getDay(date)),
-        type: 'tide',
-      };
+    if (requiredType) {
+      if (requiredType.rainfall) {
+        loadPromises.rain = {
+          promise: this.rainStorePromise.then(store => store.getDay(date)),
+          type: 'rainfall',
+        };
+      }
+      if (requiredType.flooding) {
+        loadPromises.level = {
+          promise: this.levelStorePromise.then(store => store.getDay(date)),
+          type: 'level',
+        };
+      }
+      if (requiredType.tide) {
+        loadPromises.tide = {
+          promise: this.tideStorePromise.then(store => store.getDay(date)),
+          type: 'tide',
+        };
+      }
     }
     return loadPromises;
   }

@@ -10,7 +10,7 @@ const READINGS_ENDPOINT = '/flood-monitoring/data/readings';
 
 function getJSON(apiPath, params) {
   const protocol = 'https:';
-  const api = protocol + API_ROOT + apiPath;
+  const api = `${protocol}${API_ROOT}${apiPath}`;
   const reqPromise = request
       .get(api)
       .accept('application/json')

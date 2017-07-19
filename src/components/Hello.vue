@@ -1,9 +1,7 @@
 <template>
-  <div class="hello" v-on:keyup.space="togglePause">
-    <MapView ref="map"></MapView>
-    <DataForm
-      @input="setData" ref="form"
-    ></DataForm>
+  <div class="hello">
+    <MapView ref="leaflet"></MapView>
+    <DataForm @input="setData" ref="form"></DataForm>
     <timestamp :date="date" :time="time"></timestamp>
   </div>
 </template>
@@ -79,6 +77,7 @@ export default {
           const loadObj = {};
           loadObj[datePromises[key].type] = true;
           this.$refs.form.toggleLoad(loadObj);
+          this.time = '00-00';
           this.play();
           return null;
         }),
@@ -111,7 +110,9 @@ export default {
           levelData: { data: values.levelPoints, options: {} },
           tideData: { data: values.tidePoints, options: tideOptions },
         };
-        this.$refs.map.pointsUpdate(data);
+        if (this.$refs) {
+          this.$refs.leaflet.pointsUpdate(data);
+        }
       });
     },
   },
