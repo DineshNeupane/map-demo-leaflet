@@ -42,7 +42,7 @@ function mapGraph(data) {
 }
 
 function heatMap(data) {
-  const params = _.extend({}, data.options);
+  const params = _.extend({ radius: 10 }, data.options);
   if (data) {
     const pointlocation = data.data.map(point =>
       ([point.lat(), point.long(), point.value() * 0.02]));

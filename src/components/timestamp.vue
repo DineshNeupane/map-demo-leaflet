@@ -21,10 +21,11 @@
 
 <style scoped>
 .bg {
-  height: 100px;
+  height: 8vh;
   width: 100%;
   background-color: #333333;
-  font-size: 70px;
+  font-size: 6vh;
   color: #00AA01;
+  overflow: hidden;
 }
 </style>
