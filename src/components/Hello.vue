@@ -56,6 +56,7 @@ export default {
     },
   },
   methods: {
+    // Used to pass dataModel currently selected data types
     getSelected() {
       return {
         flooding: this.flooding,
@@ -63,6 +64,7 @@ export default {
         rainfall: this.rainfall,
       };
     },
+    // Called when dataForm emits an input event, updates selected data types
     setData(formData) {
       this.flooding = formData.flooding;
       this.rainfall = formData.rainfall;

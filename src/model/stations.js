@@ -10,6 +10,7 @@ let stationsPromise;
 let measures;
 let measuresPromise;
 
+// Get and cache stations
 function retrieveStations() {
   stationsPromise = allStations()
     .then((stns) => {
@@ -20,6 +21,7 @@ function retrieveStations() {
   return stationsPromise;
 }
 
+// Returns (potentially cached) stations
 function stationsCollection() {
   if (stations) {
     return Promise.resolve(stations);
@@ -30,6 +32,8 @@ function stationsCollection() {
   return retrieveStations();
 }
 
+// Returns an object keyed by measure URI whose value is the lat and long of the
+// measure station
 function measureLocations() {
   let locationPromise;
   if (measures) {
@@ -84,6 +88,7 @@ function latestValues() {
     );
 }
 
+// Converts array of Readings to array of dataPoints
 function readingArrayToDataPoints(locations, readings) {
   let out = [];
   if (readings) {

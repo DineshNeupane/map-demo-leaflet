@@ -18,6 +18,7 @@ export default class dataModel {
       new PointStore(250000, riverReadings, locations));
   }
 
+  // Calls getters from requiredType to get latest data
   getLatest(requiredType) {
     let rainPromise = Promise.resolve([]);
     let tidePromise = Promise.resolve([]);
@@ -36,6 +37,7 @@ export default class dataModel {
         ({ levelPoints, rainPoints, tidePoints }));
   }
 
+  // Calls getters from requiredType to get data for date
   getDate(date, requiredType) {
     const loadPromises = {};
     if (requiredType.rainfall) {

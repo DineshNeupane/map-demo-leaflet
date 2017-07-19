@@ -2,6 +2,8 @@ import { readingArrayToDataPoints } from '../model/stations';
 
 const _ = require('lodash');
 
+// Takes an array of readings and forms an object keyed by datetime string
+// where the value is an array of data points for that time
 function binReadings(readings) {
   const bins = {};
   readings.map((reading) => {
@@ -26,7 +28,7 @@ export default class PointStore {
     this.locations = locations;
   }
 
-
+  // Stores points for required day
   getDay(date) {
     let completionPromise;
     if (!this.loadingDays[date]) {
