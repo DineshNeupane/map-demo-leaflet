@@ -109,6 +109,7 @@ export default {
       );
     },
     play() {
+      this.$refs.time.setStart();
       if (!this.intervalId) {
         this.intervalId = window.setInterval(() => {
           this.date = moment(this.date, 'YYYY-MM-DD').format('YYYY-MM-DD');
