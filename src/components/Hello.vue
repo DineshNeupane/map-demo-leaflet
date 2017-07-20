@@ -31,7 +31,7 @@ export default {
   name: 'hello',
   data() {
     return {
-      date: moment().format('YYYY-MM-DD HH-mm'),
+      date: moment().format('YYYY-MM-DD'),
       time: nearestQuarterHour(),
       flooding: true,
       rainfall: true,
@@ -67,7 +67,6 @@ export default {
       this.flooding = formData.flooding;
       this.rainfall = formData.rainfall;
       this.tide = formData.tide;
-      this.date = formData.date;
       this.latest = false;
       this.day = true;
       const datePromises = dataModel.getDate(this.date, this.getSelected());
@@ -81,6 +80,7 @@ export default {
             loadObj[datePromises[key].type] = true;
             this.$refs.form.toggleLoad(loadObj);
             this.time = '00-00';
+            this.date = formData.date;
             this.play();
             return null;
           });
