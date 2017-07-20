@@ -27,7 +27,7 @@ body {
 }
 
 date-input-polyfill {
-  z-index: 1002;
+  z-index: 1002 !important;
 }
 
 </style>
