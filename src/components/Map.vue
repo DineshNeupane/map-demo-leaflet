@@ -42,10 +42,10 @@ function mapGraph(data) {
 }
 
 function heatMap(data) {
-  const params = _.extend({ radius: 10 }, data.options);
+  const params = _.extend({ radius: 10, blur: 40 }, data.options);
   if (data) {
     const pointlocation = data.data.map(point =>
-      ([point.lat(), point.long(), point.value() * 0.02]));
+      ([point.lat(), point.long(), point.value() * 10]));
     return L.heatLayer(pointlocation, params);
   }
   return new L.LayerGroup();

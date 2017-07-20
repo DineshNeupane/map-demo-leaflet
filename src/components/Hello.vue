@@ -2,7 +2,14 @@
   <div class="hello">
     <MapView ref="leaflet"></MapView>
     <DataForm @input="setData" ref="form"></DataForm>
-    <timestamp :date="date" :time="time"></timestamp>
+    <timestamp @skipfwd="skipfwd"
+               @skipback="skipback"
+               @pause="pause"
+               @play="play"
+               :date="date"
+               :time="time"
+               ref="time">
+    </timestamp>
   </div>
 </template>
 
@@ -69,7 +76,8 @@ export default {
       this.tide = formData.tide;
       this.latest = false;
       this.day = true;
-      const datePromises = dataModel.getDate(this.date, this.getSelected());
+      this.pause();
+      const datePromises = dataModel.getDate(formData.date, this.getSelected());
       this.$refs.form.toggleLoad(this.getSelected());
       Object.keys(datePromises).map(key =>
         datePromises[key].promise.then((out) => {
@@ -82,6 +90,7 @@ export default {
             this.time = '00-00';
             this.date = formData.date;
             this.play();
+            this.checkdate();
             return null;
           });
           out.pagePromises.map(promise =>
@@ -101,11 +110,22 @@ export default {
           this.time = moment(this.time, 'HH-mm')
             .add(15, 'minutes').format('HH-mm');
           this.checkdate(this.date, this.time);
+          this.$refs.time.setStart();
         }, 50);
       }
     },
     pause() {
       this.intervalId = window.clearInterval(this.intervalId);
+    },
+    skipfwd() {
+      this.time = moment(this.time, 'HH-mm')
+        .add(15, 'minutes').format('HH-mm');
+      this.checkdate();
+    },
+    skipback() {
+      this.time = moment(this.time, 'HH-mm')
+        .subtract(15, 'minutes').format('HH-mm');
+      this.checkdate();
     },
     checkdate() {
       let valuePromises;
