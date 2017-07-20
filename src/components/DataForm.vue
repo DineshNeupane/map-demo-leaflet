@@ -75,18 +75,30 @@ export default {
     toggleLoad(toToggle) {
       if (toToggle.flooding) {
         const floodload = document.getElementById('floodload');
-        floodload.classList.toggle('notloading');
-        this.floodProgress = '';
+        if (toToggle.flooding === 'fail') {
+          this.floodProgress = 'Failed';
+        } else {
+          floodload.classList.toggle('notloading');
+          this.floodProgress = '';
+        }
       }
       if (toToggle.rainfall) {
         const rainload = document.getElementById('rainload');
-        rainload.classList.toggle('notloading');
-        this.rainProgress = '';
+        if (toToggle.rainfall === 'fail') {
+          this.rainProgress = 'Failed';
+        } else {
+          rainload.classList.toggle('notloading');
+          this.rainProgress = '';
+        }
       }
       if (toToggle.tide) {
         const tideload = document.getElementById('tideload');
-        tideload.classList.toggle('notloading');
-        this.tideProgress = '';
+        if (toToggle.tide === 'fail') {
+          this.rainProgress = 'Failed';
+        } else {
+          tideload.classList.toggle('notloading');
+          this.tideProgress = '';
+        }
       }
     },
     loadingPercent(percentObj) {

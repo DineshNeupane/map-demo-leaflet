@@ -92,7 +92,12 @@ export default {
             this.play();
             this.checkdate();
             return null;
-          });
+          })
+            .catch(() => {
+              const loadObj = {};
+              loadObj[datePromises[key].type] = 'fail';
+              this.$refs.form.toggleLoad(loadObj);
+            });
           out.pagePromises.map(promise =>
             promise.then(() => {
               done += 1;

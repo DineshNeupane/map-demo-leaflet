@@ -30,7 +30,7 @@
       setStart() {
         if (this.playerStatus === '') {
           document.getElementById('playbackholder').style.display = 'block';
-          this.playerStatus = '▶';
+          this.playerStatus = '▮▮';
           this.playing = true;
         }
       },
