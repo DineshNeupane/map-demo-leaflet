@@ -1,6 +1,6 @@
 <template>
   <div class="bg">
-    <span id="playbackholder">
+    <span id="playbackholder" class="hidden">
       <span class="playback" v-on:click="skipback">⏪</span>
       <span class="playback" v-on:click="togglePause">{{playerStatus}}</span>
       <span class="playback" v-on:click="skipfwd">⏩</span>
@@ -29,7 +29,7 @@
     methods: {
       setStart() {
         if (this.playerStatus === '') {
-          document.getElementById('playbackholder').style.display = 'block';
+          document.getElementById('playbackholder').classList.toggle('hidden');
           this.playerStatus = '▮▮';
           this.playing = true;
         }
@@ -59,7 +59,6 @@
 <style scoped>
 #playbackholder {
   float: left;
-  display: none;
 }
 
 .bg {
