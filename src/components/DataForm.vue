@@ -14,8 +14,7 @@
             Tide
             <span class="notloading load" id="tideload">
               Loading {{tideProgress}}
-            </span>
-          </div>
+            </span> </div>
           <div>
             <input class="checkbox" type="checkbox" v-model='rainfall'></input>
             Rainfall
@@ -129,7 +128,7 @@ export default {
 
 .prompt {
   position: absolute;
-  top: 70%;
+  bottom: 12%;
   right: 5%;
   padding: 5px;
   z-index: 1001;
