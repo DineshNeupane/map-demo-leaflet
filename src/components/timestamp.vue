@@ -1,9 +1,9 @@
 <template>
   <div class="bg">
     <span id="playbackholder" class="hidden">
-      <span class="playback" v-on:click="skipback">⏪</span>
-      <span class="playback" v-on:click="togglePause">{{playerStatus}}</span>
-      <span class="playback" v-on:click="skipfwd">⏩</span>
+      <span class="playback" v-on:click="skipback"><i class="fa fa-backward" aria-hidden="true"></i></span>
+      <span class="playback" v-on:click="togglePause"><i id="play" class="fa icon-fixed-width fa-play" aria-hidden="true"></i></span>
+      <span class="playback" v-on:click="skipfwd"><i class="fa fa-forward" aria-hidden="true"></i></span>
     </span>
     <span>{{datestring}}</span>
   </div>
@@ -36,11 +36,14 @@
       },
       togglePause() {
         if (!this.playing) {
+          document.getElementById('play').classList.toggle('fa-play');
+          document.getElementById('play').classList.toggle('fa-pause');
           this.playerStatus = '▮▮';
           this.playing = true;
           this.$emit('play');
         } else {
-          this.playerStatus = '▶';
+          document.getElementById('play').classList.toggle('fa-pause');
+          document.getElementById('play').classList.toggle('fa-play');
           this.playing = false;
           this.$emit('pause');
         }
@@ -72,6 +75,7 @@
 
 .playback {
   user-select: none;
+  line-height: 30px;
 }
 
 .hidden {
